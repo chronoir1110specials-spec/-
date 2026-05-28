@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.model.mapper.ModelConfigMapper">
+
+    <resultMap type="com.ruoyi.model.domain.ModelConfig" id="ModelConfigResult">
+        <id     property="id"                 column="id"                  />
+        <result property="modelRole"          column="model_role"          />
+        <result property="provider"           column="provider"            />
+        <result property="modelName"          column="model_name"          />
+        <result property="baseUrl"            column="base_url"            />
+        <result property="apiKey"             column="api_key"             />
+        <result property="enabled"            column="enabled"             />
+        <result property="maxTokens"          column="max_tokens"          />
+        <result property="embeddingDimension" column="embedding_dimension" />
+        <result property="timeout"            column="timeout"             />
+        <result property="createTime"         column="create_time"         />
+        <result property="deleted"            column="deleted"             />
+    </resultMap>
+
+    <sql id="selectModelConfigVo">
+        select id, model_role, provider, model_name, base_url, api_key, enabled,
+               max_tokens, embedding_dimension, timeout, create_time, deleted
+        from model_config
+    </sql>
+
+    <select id="selectByModelRole" parameterType="java.lang.String" resultMap="ModelConfigResult">
+        <include refid="selectModelConfigVo"/>
+        where model_role = #{modelRole}
+          and deleted = 0
+        limit 1
+    </select>
+
+</mapper>

@@ -48,6 +48,13 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
+        <!-- MyBatis-Plus -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot4-starter</artifactId>
+            <version>3.5.14</version>
+        </dependency>
+
         <!-- RuoYi Common Core -->
         <dependency>
             <groupId>com.ruoyi</groupId>
