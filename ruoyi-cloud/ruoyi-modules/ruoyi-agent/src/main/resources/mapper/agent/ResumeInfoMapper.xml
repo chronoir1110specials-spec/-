@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.agent.mapper.ResumeInfoMapper">
+
+    <resultMap type="com.ruoyi.agent.domain.ResumeInfo" id="ResumeInfoResult">
+        <id     property="id"               column="id"                 />
+        <result property="userId"           column="user_id"            />
+        <result property="resumeName"       column="resume_name"        />
+        <result property="originalFileName" column="original_file_name" />
+        <result property="fileType"         column="file_type"          />
+        <result property="fileUrl"          column="file_url"           />
+        <result property="contentHash"      column="content_hash"       />
+        <result property="content"          column="content"            />
+        <result property="parseStatus"      column="parse_status"       />
+        <result property="parseError"       column="parse_error"        />
+        <result property="targetPosition"   column="target_position"    />
+        <result property="analysisResult"   column="analysis_result"    />
+        <result property="score"            column="score"              />
+        <result property="createTime"       column="create_time"        />
+        <result property="updateTime"       column="update_time"        />
+        <result property="deleted"          column="deleted"            />
+    </resultMap>
+
+</mapper>
