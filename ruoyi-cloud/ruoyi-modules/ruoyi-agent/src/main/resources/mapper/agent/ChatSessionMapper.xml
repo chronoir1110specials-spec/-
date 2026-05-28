@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.agent.mapper.ChatSessionMapper">
+
+    <resultMap type="com.ruoyi.agent.domain.ChatSession" id="ChatSessionResult">
+        <id     property="id"                   column="id"                       />
+        <result property="userId"               column="user_id"                  />
+        <result property="title"                column="title"                    />
+        <result property="agentType"            column="agent_type"               />
+        <result property="contextSummary"       column="context_summary"          />
+        <result property="lastSummaryMessageId" column="last_summary_message_id"  />
+        <result property="summaryVersion"       column="summary_version"          />
+        <result property="recentMessageLimit"   column="recent_message_limit"     />
+        <result property="maxContextTokens"     column="max_context_tokens"       />
+        <result property="interviewStatus"      column="interview_status"         />
+        <result property="currentQuestionIndex" column="current_question_index"   />
+        <result property="totalQuestions"       column="total_questions"          />
+        <result property="interviewPosition"    column="interview_position"       />
+        <result property="interviewDifficulty"  column="interview_difficulty"     />
+        <result property="interviewScore"       column="interview_score"          />
+        <result property="interviewSummary"     column="interview_summary"        />
+        <result property="createTime"           column="create_time"              />
+        <result property="updateTime"           column="update_time"              />
+        <result property="deleted"              column="deleted"                  />
+    </resultMap>
+
+</mapper>

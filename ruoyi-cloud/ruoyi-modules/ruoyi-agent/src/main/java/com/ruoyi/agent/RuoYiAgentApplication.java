@@ -13,7 +13,7 @@ import com.ruoyi.common.security.annotation.EnableRyFeignClients;
  */
 @EnableCustomConfig
 @EnableRyFeignClients
-@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class })
+@SpringBootApplication(scanBasePackages = "com.ruoyi", exclude = {DataSourceAutoConfiguration.class })
 public class RuoYiAgentApplication
 {
     public static void main(String[] args)

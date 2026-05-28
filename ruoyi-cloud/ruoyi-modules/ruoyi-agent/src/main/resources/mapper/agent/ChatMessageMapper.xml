@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.agent.mapper.ChatMessageMapper">
+
+    <resultMap type="com.ruoyi.agent.domain.ChatMessage" id="ChatMessageResult">
+        <id     property="id"         column="id"          />
+        <result property="sessionId"  column="session_id"  />
+        <result property="userId"     column="user_id"     />
+        <result property="role"       column="role"        />
+        <result property="content"    column="content"     />
+        <result property="modelName"  column="model_name"  />
+        <result property="createTime" column="create_time" />
+        <result property="deleted"    column="deleted"     />
+    </resultMap>
+
+</mapper>

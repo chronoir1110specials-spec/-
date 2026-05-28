@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.agent.mapper.UserProfileMapper">
+
+    <resultMap type="com.ruoyi.agent.domain.UserProfile" id="UserProfileResult">
+        <id     property="id"             column="id"              />
+        <result property="userId"         column="user_id"         />
+        <result property="school"         column="school"          />
+        <result property="major"          column="major"           />
+        <result property="grade"          column="grade"           />
+        <result property="targetPosition" column="target_position" />
+        <result property="targetCity"     column="target_city"     />
+        <result property="skillTags"      column="skill_tags"      />
+        <result property="projectTags"    column="project_tags"    />
+        <result property="jobStage"       column="job_stage"       />
+        <result property="createTime"     column="create_time"     />
+        <result property="updateTime"     column="update_time"     />
+        <result property="deleted"        column="deleted"         />
+    </resultMap>
+
+</mapper>
