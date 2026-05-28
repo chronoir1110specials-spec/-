@@ -59,6 +59,22 @@ public class ModelCallLogServiceImpl implements IModelCallLogService
     }
 
     /**
+     * 查询最近模型调用日志
+     *
+     * @param limit 查询数量
+     * @return 模型调用日志集合
+     */
+    @Override
+    public List<ModelCallLog> listRecent(int limit)
+    {
+        LambdaQueryWrapper<ModelCallLog> queryWrapper = new LambdaQueryWrapper<ModelCallLog>()
+                .eq(ModelCallLog::getDeleted, NOT_DELETED)
+                .orderByDesc(ModelCallLog::getCreateTime)
+                .last("limit " + Math.max(1, limit));
+        return modelCallLogMapper.selectList(queryWrapper);
+    }
+
+    /**
      * 按用户查询
      *
      * @param userId 用户 ID

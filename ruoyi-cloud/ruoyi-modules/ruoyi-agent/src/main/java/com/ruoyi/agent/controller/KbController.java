@@ -14,13 +14,12 @@ import java.util.UUID;
 import com.ruoyi.agent.domain.KbDocument;
 import com.ruoyi.agent.service.IKbChunkService;
 import com.ruoyi.agent.service.IKbDocumentService;
+import com.ruoyi.agent.service.impl.KnowledgeQAAgentService;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.utils.StringUtils;
 import com.ruoyi.common.core.utils.file.FileTypeUtils;
 import com.ruoyi.common.security.utils.SecurityUtils;
-import com.ruoyi.model.dto.ChatRequest;
 import com.ruoyi.model.dto.ChatResponse;
-import com.ruoyi.model.router.ChatModelRouter;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -57,7 +56,7 @@ public class KbController
     private IKbChunkService kbChunkService;
 
     @Autowired
-    private ChatModelRouter chatModelRouter;
+    private KnowledgeQAAgentService knowledgeQAAgentService;
 
     /**
      * 上传知识库文档
@@ -165,10 +164,7 @@ public class KbController
         {
             return R.fail("问题不能为空");
         }
-        ChatRequest chatRequest = new ChatRequest();
-        chatRequest.setUserId(getCurrentUserId());
-        chatRequest.setContent(request.getQuestion());
-        return R.ok(chatModelRouter.chat(chatRequest));
+        return R.ok(knowledgeQAAgentService.ask(getCurrentUserId(), request.getQuestion()));
     }
 
     private boolean isAllowedExtension(String extension)

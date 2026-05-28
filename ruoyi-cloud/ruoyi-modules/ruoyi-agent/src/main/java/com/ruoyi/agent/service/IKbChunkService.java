@@ -14,6 +14,8 @@ public interface IKbChunkService
 
     List<KbChunk> listByDocId(Long documentId);
 
+    List<KbChunk> searchByKeyword(String keyword, int limit);
+
     boolean deleteByDocId(Long documentId);
 
     KbChunk getByDocId(Long documentId, Integer chunkIndex);

@@ -1,5 +1,6 @@
 package com.ruoyi.model.service.impl;
 
+import java.util.Date;
 import java.util.List;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -88,6 +89,52 @@ public class ModelConfigServiceImpl implements IModelConfigService
                 .eq(ModelConfig::getDeleted, NOT_DELETED)
                 .orderByAsc(ModelConfig::getId);
         return modelConfigMapper.selectList(queryWrapper);
+    }
+
+    /**
+     * 查询所有模型配置
+     *
+     * @return 模型配置集合
+     */
+    @Override
+    public List<ModelConfig> listAll()
+    {
+        LambdaQueryWrapper<ModelConfig> queryWrapper = new LambdaQueryWrapper<ModelConfig>()
+                .eq(ModelConfig::getDeleted, NOT_DELETED)
+                .orderByAsc(ModelConfig::getId);
+        return modelConfigMapper.selectList(queryWrapper);
+    }
+
+    /**
+     * 保存模型配置
+     *
+     * @param config 模型配置
+     * @return 模型配置
+     */
+    @Override
+    public ModelConfig save(ModelConfig config)
+    {
+        if (config == null)
+        {
+            return null;
+        }
+        if (config.getId() == null)
+        {
+            if (config.getCreateTime() == null)
+            {
+                config.setCreateTime(new Date());
+            }
+            if (config.getDeleted() == null)
+            {
+                config.setDeleted(NOT_DELETED);
+            }
+            modelConfigMapper.insert(config);
+        }
+        else
+        {
+            modelConfigMapper.updateById(config);
+        }
+        return config;
     }
 
     /**

@@ -47,6 +47,21 @@ public interface IModelConfigService
     public List<ModelConfig> listEnabled();
 
     /**
+     * 查询所有模型配置
+     *
+     * @return 模型配置集合
+     */
+    public List<ModelConfig> listAll();
+
+    /**
+     * 保存模型配置
+     *
+     * @param config 模型配置
+     * @return 模型配置
+     */
+    public ModelConfig save(ModelConfig config);
+
+    /**
      * 根据模型角色更新模型配置
      *
      * @param config 模型配置

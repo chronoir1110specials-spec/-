@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.ruoyi.agent.domain.KbChunk;
 import com.ruoyi.agent.mapper.KbChunkMapper;
 import com.ruoyi.agent.service.IKbChunkService;
+import com.ruoyi.common.core.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -59,6 +60,17 @@ public class KbChunkServiceImpl implements IKbChunkService
                 .eq(KbChunk::getDocumentId, documentId)
                 .eq(KbChunk::getDeleted, NOT_DELETED)
                 .orderByAsc(KbChunk::getChunkIndex);
+        return kbChunkMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public List<KbChunk> searchByKeyword(String keyword, int limit)
+    {
+        LambdaQueryWrapper<KbChunk> queryWrapper = new LambdaQueryWrapper<KbChunk>()
+                .like(StringUtils.isNotEmpty(keyword), KbChunk::getContent, keyword)
+                .eq(KbChunk::getDeleted, NOT_DELETED)
+                .orderByDesc(KbChunk::getCreateTime)
+                .last("limit " + Math.max(1, limit));
         return kbChunkMapper.selectList(queryWrapper);
     }
 
