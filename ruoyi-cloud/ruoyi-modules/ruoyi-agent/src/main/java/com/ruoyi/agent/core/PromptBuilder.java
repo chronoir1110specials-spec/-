@@ -61,6 +61,10 @@ public class PromptBuilder
         {
             sb.append("【当前任务】根据学生情况制定职业规划建议和学习路线。\n");
         }
+        else if ("material".equals(agentType))
+        {
+            sb.append("【当前任务】生成适合学生画像和目标岗位的求职材料。\n");
+        }
         else if ("knowledge_qa".equals(agentType))
         {
             sb.append("【当前任务】基于就业知识库回答政策和流程问题，注明信息来源。\n");

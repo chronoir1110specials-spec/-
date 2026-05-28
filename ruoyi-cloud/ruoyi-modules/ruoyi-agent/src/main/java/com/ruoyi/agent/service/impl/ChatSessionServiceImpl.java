@@ -166,4 +166,21 @@ public class ChatSessionServiceImpl implements IChatSessionService
                 .eq(ChatSession::getDeleted, NOT_DELETED);
         return chatSessionMapper.update(null, updateWrapper) > 0;
     }
+
+    @Override
+    public boolean updateInterviewSummary(Long id, String status, Integer score, String summary)
+    {
+        if (id == null)
+        {
+            return false;
+        }
+        LambdaUpdateWrapper<ChatSession> updateWrapper = new LambdaUpdateWrapper<ChatSession>()
+                .set(ChatSession::getInterviewStatus, status)
+                .set(ChatSession::getInterviewScore, score)
+                .set(ChatSession::getInterviewSummary, summary)
+                .set(ChatSession::getUpdateTime, new Date())
+                .eq(ChatSession::getId, id)
+                .eq(ChatSession::getDeleted, NOT_DELETED);
+        return chatSessionMapper.update(null, updateWrapper) > 0;
+    }
 }

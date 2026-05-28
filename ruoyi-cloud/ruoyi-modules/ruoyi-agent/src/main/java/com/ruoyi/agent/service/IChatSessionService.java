@@ -23,4 +23,6 @@ public interface IChatSessionService
     boolean updateSummary(Long id, String summary, Long lastMsgId, Integer version);
 
     boolean updateInterviewStatus(Long id, String status, Integer questionIndex);
+
+    boolean updateInterviewSummary(Long id, String status, Integer score, String summary);
 }
