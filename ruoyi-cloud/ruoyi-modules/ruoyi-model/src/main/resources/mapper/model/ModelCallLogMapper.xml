@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.model.mapper.ModelCallLogMapper">
+
+    <resultMap type="com.ruoyi.model.domain.ModelCallLog" id="ModelCallLogResult">
+        <id     property="id"               column="id"                />
+        <result property="userId"           column="user_id"           />
+        <result property="sessionId"        column="session_id"        />
+        <result property="provider"         column="provider"          />
+        <result property="modelName"        column="model_name"        />
+        <result property="isFallback"       column="is_fallback"       />
+        <result property="promptTokens"     column="prompt_tokens"     />
+        <result property="completionTokens" column="completion_tokens" />
+        <result property="totalTokens"      column="total_tokens"      />
+        <result property="costTime"         column="cost_time"         />
+        <result property="status"           column="status"            />
+        <result property="errorMessage"     column="error_message"     />
+        <result property="createTime"       column="create_time"       />
+        <result property="deleted"          column="deleted"           />
+    </resultMap>
+
+    <sql id="selectModelCallLogVo">
+        select id, user_id, session_id, provider, model_name, is_fallback,
+               prompt_tokens, completion_tokens, total_tokens, cost_time, status,
+               error_message, create_time, deleted
+        from model_call_log
+    </sql>
+
+</mapper>
