@@ -46,6 +46,7 @@ public class PromptBuilder
         if ("resume".equals(agentType))
         {
             sb.append("【当前任务】帮助学生优化简历。请分析简历内容，指出问题，给出评分和修改建议。\n");
+            sb.append("请以 JSON 格式输出，字段包括：score、summary、problems、suggestions、keywords。\n");
         }
         else if ("interview".equals(agentType))
         {
@@ -54,6 +55,7 @@ public class PromptBuilder
         else if ("job_analysis".equals(agentType))
         {
             sb.append("【当前任务】分析目标岗位 JD，提取技能要求，评估匹配度。\n");
+            sb.append("请以 JSON 格式输出，字段包括：requiredSkills、bonusSkills、matchScore、resumeAdvice、interviewTopics。\n");
         }
         else if ("career_plan".equals(agentType))
         {

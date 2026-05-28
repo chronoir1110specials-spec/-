@@ -1,16 +1,15 @@
 package com.ruoyi.agent.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import com.ruoyi.agent.core.OutputParser;
 import com.ruoyi.agent.core.PromptBuilder;
+import com.ruoyi.agent.core.TypeConverter;
 import com.ruoyi.agent.domain.JobInfo;
 import com.ruoyi.agent.domain.UserProfile;
+import com.ruoyi.agent.service.BaseAgentService;
 import com.ruoyi.agent.service.IJobInfoService;
 import com.ruoyi.agent.service.IUserProfileService;
 import com.ruoyi.model.dto.ChatRequest;
-import com.ruoyi.model.dto.ChatRequest.ChatMessageVo;
 import com.ruoyi.model.dto.ChatResponse;
 import com.ruoyi.model.router.ChatModelRouter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +21,8 @@ import org.springframework.stereotype.Service;
  * @author ruoyi
  */
 @Service
-public class JobAnalysisAgentService
+public class JobAnalysisAgentService extends BaseAgentService
 {
-    private static final String ROLE_SYSTEM = "system";
-
     private static final String AGENT_TYPE = "job_analysis";
 
     @Autowired
@@ -55,8 +52,7 @@ public class JobAnalysisAgentService
     public ChatResponse analyzeJob(Long userId, String jobDesc, String jobName, String company)
     {
         UserProfile profile = userProfileService.getByUserId(userId);
-        String systemPrompt = promptBuilder.buildSystemPrompt(profile, AGENT_TYPE)
-                + "\n请以 JSON 格式输出，字段包括：requiredSkills、bonusSkills、matchScore、resumeAdvice、interviewTopics。";
+        String systemPrompt = promptBuilder.buildSystemPrompt(profile, AGENT_TYPE);
 
         ChatRequest request = new ChatRequest();
         request.setUserId(userId);
@@ -67,7 +63,7 @@ public class JobAnalysisAgentService
         if (response != null && response.isSuccess())
         {
             Map<String, Object> result = outputParser.parseToMap(response.getContent());
-            Integer matchScore = toInteger(result.get("matchScore"));
+            Integer matchScore = TypeConverter.toInteger(result.get("matchScore"));
 
             JobInfo jobInfo = new JobInfo();
             jobInfo.setUserId(userId);
@@ -79,35 +75,5 @@ public class JobAnalysisAgentService
             jobInfoService.save(jobInfo);
         }
         return response;
-    }
-
-    private List<ChatMessageVo> buildSystemHistory(String systemPrompt)
-    {
-        List<ChatMessageVo> history = new ArrayList<ChatMessageVo>();
-        ChatMessageVo system = new ChatMessageVo();
-        system.setRole(ROLE_SYSTEM);
-        system.setContent(systemPrompt);
-        history.add(system);
-        return history;
-    }
-
-    private Integer toInteger(Object value)
-    {
-        if (value == null)
-        {
-            return null;
-        }
-        if (value instanceof Number)
-        {
-            return ((Number) value).intValue();
-        }
-        try
-        {
-            return Double.valueOf(String.valueOf(value).trim()).intValue();
-        }
-        catch (NumberFormatException e)
-        {
-            return null;
-        }
     }
 }

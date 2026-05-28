@@ -42,8 +42,8 @@ public class AgentController
         {
             return R.fail("简历内容不能为空");
         }
-        Long userId = SecurityUtils.getUserId();
-        return R.ok(resumeAgentService.analyzeResume(userId, request.getResumeContent()));
+        Long userId = getCurrentUserId(null);
+        return R.ok(resumeAgentService.analyzeResume(userId, request.getResumeContent(), request.getResumeName()));
     }
 
     /**
@@ -56,7 +56,7 @@ public class AgentController
         {
             return R.fail("岗位描述不能为空");
         }
-        Long userId = SecurityUtils.getUserId();
+        Long userId = getCurrentUserId(null);
         return R.ok(jobAnalysisAgentService.analyzeJob(userId, request.getJobDescription(), request.getJobName(),
                 request.getCompanyName()));
     }
@@ -72,9 +72,22 @@ public class AgentController
             return R.fail("消息内容不能为空");
         }
         ChatRequest chatRequest = new ChatRequest();
-        chatRequest.setUserId(SecurityUtils.getUserId());
+        chatRequest.setUserId(getCurrentUserId(null));
         chatRequest.setContent(request.getMessage());
         return R.ok(chatModelRouter.chat(chatRequest));
+    }
+
+    private Long getCurrentUserId(Long fallbackUserId)
+    {
+        try
+        {
+            Long userId = SecurityUtils.getUserId();
+            return userId == null ? fallbackUserId : userId;
+        }
+        catch (Exception e)
+        {
+            return fallbackUserId;
+        }
     }
 
     /**
@@ -82,7 +95,19 @@ public class AgentController
      */
     public static class ResumeOptimizeRequest
     {
+        private String resumeName;
+
         private String resumeContent;
+
+        public String getResumeName()
+        {
+            return resumeName;
+        }
+
+        public void setResumeName(String resumeName)
+        {
+            this.resumeName = resumeName;
+        }
 
         public String getResumeContent()
         {
