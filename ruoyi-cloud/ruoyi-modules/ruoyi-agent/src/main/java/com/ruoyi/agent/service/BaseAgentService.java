@@ -3,7 +3,7 @@ package com.ruoyi.agent.service;
 import java.util.ArrayList;
 import java.util.List;
 import com.ruoyi.agent.domain.ChatMessage;
-import com.ruoyi.model.dto.ChatRequest.ChatMessageVo;
+import com.ruoyi.model.api.dto.ChatRequest.ChatMessageVo;
 
 /**
  * Agent 服务基础能力

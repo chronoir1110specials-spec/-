@@ -53,6 +53,9 @@ public class KbChunk implements Serializable
     /** 向量化状态 */
     private String vectorStatus;
 
+    /** 向量值（JSON 数组字符串） */
+    private String embeddingVector;
+
     /** 元数据 */
     private String metadata;
 
@@ -175,6 +178,16 @@ public class KbChunk implements Serializable
     public void setVectorStatus(String vectorStatus)
     {
         this.vectorStatus = vectorStatus;
+    }
+
+    public String getEmbeddingVector()
+    {
+        return embeddingVector;
+    }
+
+    public void setEmbeddingVector(String embeddingVector)
+    {
+        this.embeddingVector = embeddingVector;
     }
 
     public String getMetadata()

@@ -16,6 +16,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="chunkVersion"       column="chunk_version"       />
         <result property="tokenCount"         column="token_count"         />
         <result property="vectorStatus"       column="vector_status"       />
+        <result property="embeddingVector"    column="embedding_vector"    />
         <result property="metadata"           column="metadata"            />
         <result property="createTime"         column="create_time"         />
         <result property="updateTime"         column="update_time"         />

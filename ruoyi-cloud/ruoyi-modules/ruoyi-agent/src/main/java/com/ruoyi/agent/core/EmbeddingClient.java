@@ -3,9 +3,11 @@ package com.ruoyi.agent.core;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.ruoyi.common.core.constant.SecurityConstants;
+import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.utils.StringUtils;
-import com.ruoyi.model.domain.ModelConfig;
-import com.ruoyi.model.mapper.ModelConfigMapper;
+import com.ruoyi.model.api.RemoteModelService;
+import com.ruoyi.model.api.domain.ModelConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +33,21 @@ public class EmbeddingClient
     private static final String EMBEDDINGS_PATH = "/embeddings";
 
     @Autowired
-    private ModelConfigMapper modelConfigMapper;
+    private RemoteModelService remoteModelService;
 
     @Autowired
     private RestTemplate restTemplate;
+
+    /**
+     * 返回当前配置的 embedding 模型名（用于记录到 kb_chunk.embedding_model，
+     * 供判断是否需要重新向量化）。未配置返回 null。
+     */
+    public String getModelName()
+    {
+        R<ModelConfig> r = remoteModelService.getConfigByRole(MODEL_ROLE_EMBEDDING, SecurityConstants.INNER);
+        ModelConfig config = r == null ? null : r.getData();
+        return config == null ? null : config.getModelName();
+    }
 
     public float[] embed(String text)
     {
@@ -42,7 +55,8 @@ public class EmbeddingClient
         {
             return null;
         }
-        ModelConfig config = modelConfigMapper.selectByModelRole(MODEL_ROLE_EMBEDDING);
+        R<ModelConfig> r = remoteModelService.getConfigByRole(MODEL_ROLE_EMBEDDING, SecurityConstants.INNER);
+        ModelConfig config = r == null ? null : r.getData();
         if (config == null || StringUtils.isEmpty(config.getBaseUrl()) || StringUtils.isEmpty(config.getModelName())
                 || StringUtils.isEmpty(config.getApiKey()))
         {

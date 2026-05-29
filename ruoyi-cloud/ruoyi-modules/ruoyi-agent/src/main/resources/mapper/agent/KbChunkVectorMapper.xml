@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.agent.mapper.KbChunkVectorMapper">
+
+    <resultMap id="KbChunkVectorResult" type="com.ruoyi.agent.domain.KbChunkVector">
+        <id property="id" column="id"/>
+        <result property="chunkId" column="chunk_id"/>
+        <result property="embeddingModel" column="embedding_model"/>
+        <result property="embeddingDimension" column="embedding_dimension"/>
+        <result property="vectorStatus" column="vector_status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="deleted" column="deleted"/>
+    </resultMap>
+
+    <select id="searchByVector" resultMap="KbChunkVectorResult">
+        SELECT id, chunk_id, embedding_model, embedding_dimension, vector_status, create_time, update_time, deleted
+        FROM kb_chunk_vector
+        WHERE deleted = 0 AND vector_status = 'success'
+          AND (embedding_vector &lt;=&gt; CAST(#{queryVector} AS vector)) &lt;= #{maxDistance}
+        ORDER BY embedding_vector &lt;=&gt; CAST(#{queryVector} AS vector)
+        LIMIT #{topK}
+    </select>
+
+    <insert id="insertVector" parameterType="com.ruoyi.agent.domain.KbChunkVector"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO kb_chunk_vector
+            (chunk_id, embedding_vector, embedding_model, embedding_dimension, vector_status, create_time, update_time, deleted)
+        VALUES
+            (#{chunkId}, CAST(#{embeddingVector} AS vector), #{embeddingModel}, #{embeddingDimension},
+             #{vectorStatus}, #{createTime}, #{updateTime}, #{deleted})
+        ON CONFLICT (chunk_id) DO UPDATE SET
+            embedding_vector = EXCLUDED.embedding_vector,
+            embedding_model = EXCLUDED.embedding_model,
+            embedding_dimension = EXCLUDED.embedding_dimension,
+            vector_status = EXCLUDED.vector_status,
+            update_time = EXCLUDED.update_time,
+            deleted = EXCLUDED.deleted
+    </insert>
+
+    <update id="markDeletedByChunkIds">
+        UPDATE kb_chunk_vector
+        SET deleted = 1, update_time = now()
+        WHERE deleted = 0 AND chunk_id IN
+        <foreach collection="chunkIds" item="chunkId" open="(" separator="," close=")">
+            #{chunkId}
+        </foreach>
+    </update>
+
+</mapper>

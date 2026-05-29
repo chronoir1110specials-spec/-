@@ -7,12 +7,15 @@ import com.ruoyi.agent.service.impl.InterviewAgentService;
 import com.ruoyi.agent.service.impl.JobAnalysisAgentService;
 import com.ruoyi.agent.service.impl.MaterialAgentService;
 import com.ruoyi.agent.service.impl.ResumeAgentService;
+import com.ruoyi.common.core.constant.HttpStatus;
+import com.ruoyi.common.core.constant.SecurityConstants;
 import com.ruoyi.common.core.domain.R;
+import com.ruoyi.common.core.exception.ServiceException;
 import com.ruoyi.common.core.utils.StringUtils;
 import com.ruoyi.common.security.utils.SecurityUtils;
-import com.ruoyi.model.dto.ChatRequest;
-import com.ruoyi.model.dto.ChatResponse;
-import com.ruoyi.model.router.ChatModelRouter;
+import com.ruoyi.model.api.RemoteModelService;
+import com.ruoyi.model.api.dto.ChatRequest;
+import com.ruoyi.model.api.dto.ChatResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,7 +40,7 @@ public class AgentController
     private JobAnalysisAgentService jobAnalysisAgentService;
 
     @Autowired
-    private ChatModelRouter chatModelRouter;
+    private RemoteModelService remoteModelService;
 
     @Autowired
     private InterviewAgentService interviewAgentService;
@@ -51,6 +54,47 @@ public class AgentController
     @Autowired
     private IChatSessionService chatSessionService;
 
+    @Autowired
+    private com.ruoyi.agent.tool.ToolRegistry toolRegistry;
+
+    @Autowired
+    private com.ruoyi.agent.runtime.AgentDefinitionRegistry agentDefinitionRegistry;
+
+    /**
+     * 列出已注册工具与 Agent 定义（用于后台展示 Agent 能力）
+     */
+    @GetMapping("/tools")
+    public R<java.util.Map<String, Object>> tools()
+    {
+        java.util.List<java.util.Map<String, Object>> toolList = new java.util.ArrayList<java.util.Map<String, Object>>();
+        for (com.ruoyi.agent.tool.AgentTool<?, ?> tool : toolRegistry.listTools())
+        {
+            java.util.Map<String, Object> t = new java.util.HashMap<String, Object>();
+            t.put("name", tool.name());
+            t.put("description", tool.description());
+            t.put("readOnly", tool.isReadOnly());
+            t.put("destructive", tool.isDestructive());
+            toolList.add(t);
+        }
+        java.util.List<java.util.Map<String, Object>> defList = new java.util.ArrayList<java.util.Map<String, Object>>();
+        for (com.ruoyi.agent.runtime.AgentDefinition def : agentDefinitionRegistry.list())
+        {
+            java.util.Map<String, Object> d = new java.util.HashMap<String, Object>();
+            d.put("agentType", def.getAgentType());
+            d.put("displayName", def.getDisplayName());
+            d.put("allowedTools", def.getAllowedTools());
+            d.put("ragPolicy", def.getRagPolicy());
+            d.put("memoryPolicy", def.getMemoryPolicy());
+            d.put("modelPolicy", def.getModelPolicy());
+            d.put("maxToolCalls", def.getMaxToolCalls());
+            defList.add(d);
+        }
+        java.util.Map<String, Object> result = new java.util.HashMap<String, Object>();
+        result.put("tools", toolList);
+        result.put("agents", defList);
+        return R.ok(result);
+    }
+
     /**
      * 简历优化
      */
@@ -61,7 +105,7 @@ public class AgentController
         {
             return R.fail("简历内容不能为空");
         }
-        Long userId = getCurrentUserId(null);
+        Long userId = requireCurrentUserId();
         return R.ok(resumeAgentService.analyzeResume(userId, request.getResumeContent(), request.getResumeName()));
     }
 
@@ -75,7 +119,7 @@ public class AgentController
         {
             return R.fail("岗位描述不能为空");
         }
-        Long userId = getCurrentUserId(null);
+        Long userId = requireCurrentUserId();
         return R.ok(jobAnalysisAgentService.analyzeJob(userId, request.getJobDescription(), request.getJobName(),
                 request.getCompanyName()));
     }
@@ -91,9 +135,10 @@ public class AgentController
             return R.fail("消息内容不能为空");
         }
         ChatRequest chatRequest = new ChatRequest();
-        chatRequest.setUserId(getCurrentUserId(null));
+        chatRequest.setUserId(requireCurrentUserId());
         chatRequest.setContent(request.getMessage());
-        return R.ok(chatModelRouter.chat(chatRequest));
+        com.ruoyi.common.core.domain.R<ChatResponse> r = remoteModelService.chat(chatRequest, SecurityConstants.INNER);
+        return R.ok(r == null ? null : r.getData());
     }
 
     /**
@@ -112,7 +157,7 @@ public class AgentController
             return R.fail("面试题数必须大于 0");
         }
         String difficulty = StringUtils.isEmpty(request.getDifficulty()) ? "normal" : request.getDifficulty();
-        return R.ok(interviewAgentService.startInterview(getCurrentUserId(), request.getPosition(), difficulty,
+        return R.ok(interviewAgentService.startInterview(requireCurrentUserId(), request.getPosition(), difficulty,
                 totalQuestions));
     }
 
@@ -130,6 +175,7 @@ public class AgentController
         {
             return R.fail("回答内容不能为空");
         }
+        ensureInterviewSessionOwner(request.getSessionId());
         return R.ok(interviewAgentService.answerQuestion(request.getSessionId(), request.getAnswer()));
     }
 
@@ -143,6 +189,7 @@ public class AgentController
         {
             return R.fail("会话 ID 不能为空");
         }
+        ensureInterviewSessionOwner(request.getSessionId());
         return R.ok(interviewAgentService.nextQuestion(request.getSessionId()));
     }
 
@@ -152,11 +199,7 @@ public class AgentController
     @GetMapping("/interview/status/{sessionId}")
     public R<ChatSession> interviewStatus(@PathVariable Long sessionId)
     {
-        ChatSession session = chatSessionService.getById(sessionId);
-        if (session == null)
-        {
-            return R.fail("会话不存在");
-        }
+        ChatSession session = ensureInterviewSessionOwner(sessionId);
         return R.ok(session);
     }
 
@@ -166,6 +209,7 @@ public class AgentController
     @GetMapping("/interview/summary/{sessionId}")
     public R<ChatResponse> interviewSummary(@PathVariable Long sessionId)
     {
+        ensureInterviewSessionOwner(sessionId);
         return R.ok(interviewAgentService.summarize(sessionId));
     }
 
@@ -175,7 +219,7 @@ public class AgentController
     @PostMapping("/career/plan")
     public R<ChatResponse> careerPlan()
     {
-        return R.ok(careerPlanAgentService.generatePlan(getCurrentUserId()));
+        return R.ok(careerPlanAgentService.generatePlan(requireCurrentUserId()));
     }
 
     /**
@@ -188,25 +232,40 @@ public class AgentController
         {
             return R.fail("材料类型不能为空");
         }
-        return R.ok(materialAgentService.generateMaterial(getCurrentUserId(), request.getMaterialType()));
+        return R.ok(materialAgentService.generateMaterial(requireCurrentUserId(), request.getMaterialType()));
     }
 
-    private Long getCurrentUserId()
+    private Long requireCurrentUserId()
     {
-        return getCurrentUserId(null);
-    }
-
-    private Long getCurrentUserId(Long fallbackUserId)
-    {
+        Long userId;
         try
         {
-            Long userId = SecurityUtils.getUserId();
-            return userId == null ? fallbackUserId : userId;
+            userId = SecurityUtils.getUserId();
         }
         catch (Exception e)
         {
-            return fallbackUserId;
+            throw new ServiceException("当前用户未登录", HttpStatus.UNAUTHORIZED);
         }
+        if (userId == null)
+        {
+            throw new ServiceException("当前用户未登录", HttpStatus.UNAUTHORIZED);
+        }
+        return userId;
+    }
+
+    private ChatSession ensureInterviewSessionOwner(Long sessionId)
+    {
+        Long currentUserId = requireCurrentUserId();
+        ChatSession session = chatSessionService.getById(sessionId);
+        if (session == null)
+        {
+            throw new ServiceException("会话不存在", HttpStatus.NOT_FOUND);
+        }
+        if (session.getUserId() == null || !session.getUserId().equals(currentUserId))
+        {
+            throw new ServiceException("无权访问该会话", HttpStatus.FORBIDDEN);
+        }
+        return session;
     }
 
     /**

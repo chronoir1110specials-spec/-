@@ -12,11 +12,13 @@ import com.ruoyi.agent.service.BaseAgentService;
 import com.ruoyi.agent.service.IChatMessageService;
 import com.ruoyi.agent.service.IChatSessionService;
 import com.ruoyi.agent.service.IUserProfileService;
+import com.ruoyi.common.core.constant.SecurityConstants;
+import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.utils.StringUtils;
-import com.ruoyi.model.dto.ChatRequest;
-import com.ruoyi.model.dto.ChatRequest.ChatMessageVo;
-import com.ruoyi.model.dto.ChatResponse;
-import com.ruoyi.model.router.ChatModelRouter;
+import com.ruoyi.model.api.RemoteModelService;
+import com.ruoyi.model.api.dto.ChatRequest;
+import com.ruoyi.model.api.dto.ChatRequest.ChatMessageVo;
+import com.ruoyi.model.api.dto.ChatResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +45,7 @@ public class InterviewAgentService extends BaseAgentService
     private static final String STATUS_COMPLETED = "COMPLETED";
 
     @Autowired
-    private ChatModelRouter chatModelRouter;
+    private RemoteModelService remoteModelService;
 
     @Autowired
     private PromptBuilder promptBuilder;
@@ -70,7 +72,8 @@ public class InterviewAgentService extends BaseAgentService
         request.setContent("请生成第 1 题，只输出面试问题本身。");
         request.setHistory(buildSystemHistory(systemPrompt));
 
-        ChatResponse response = chatModelRouter.chat(request);
+        R<ChatResponse> r = remoteModelService.chat(request, SecurityConstants.INNER);
+        ChatResponse response = r == null ? null : r.getData();
         if (response != null && response.isSuccess() && StringUtils.isNotEmpty(response.getContent()))
         {
             ChatSession session = new ChatSession();
@@ -113,7 +116,8 @@ public class InterviewAgentService extends BaseAgentService
         request.setContent(buildEvaluationPrompt(answer));
         request.setHistory(buildHistory(systemPrompt, messages));
 
-        ChatResponse response = chatModelRouter.chat(request);
+        R<ChatResponse> r = remoteModelService.chat(request, SecurityConstants.INNER);
+        ChatResponse response = r == null ? null : r.getData();
         saveMessage(session, ROLE_USER, answer, null);
         if (response != null && StringUtils.isNotEmpty(response.getContent()))
         {
@@ -153,7 +157,8 @@ public class InterviewAgentService extends BaseAgentService
         request.setContent("请基于历史表现生成第 " + nextIndex + " 题，只输出面试问题本身。");
         request.setHistory(buildHistory(systemPrompt, messages));
 
-        ChatResponse response = chatModelRouter.chat(request);
+        R<ChatResponse> r = remoteModelService.chat(request, SecurityConstants.INNER);
+        ChatResponse response = r == null ? null : r.getData();
         if (response != null && response.isSuccess() && StringUtils.isNotEmpty(response.getContent()))
         {
             saveMessage(session, ROLE_ASSISTANT, response.getContent(), response.getModelName());
@@ -170,6 +175,11 @@ public class InterviewAgentService extends BaseAgentService
         {
             return ChatResponse.fail("会话不存在");
         }
+        String currentStatus = session.getInterviewStatus();
+        if (!STATUS_SUMMARIZING.equals(currentStatus) && !STATUS_COMPLETED.equals(currentStatus))
+        {
+            return ChatResponse.fail("当前状态[" + currentStatus + "]不允许生成总结，请先完成所有题目");
+        }
         List<ChatMessage> messages = chatMessageService.listBySessionId(sessionId);
         String systemPrompt = buildInterviewSystemPrompt(userProfileService.getByUserId(session.getUserId()),
                 session.getInterviewPosition(), session.getInterviewDifficulty());
@@ -180,7 +190,8 @@ public class InterviewAgentService extends BaseAgentService
         request.setContent("请根据完整面试记录生成总结。请以 JSON 格式输出，字段包括：score、summary、weakPoints、suggestions。");
         request.setHistory(buildHistory(systemPrompt, messages));
 
-        ChatResponse response = chatModelRouter.chat(request);
+        R<ChatResponse> r = remoteModelService.chat(request, SecurityConstants.INNER);
+        ChatResponse response = r == null ? null : r.getData();
         if (response != null && response.isSuccess())
         {
             Map<String, Object> result = outputParser.parseToMap(response.getContent());

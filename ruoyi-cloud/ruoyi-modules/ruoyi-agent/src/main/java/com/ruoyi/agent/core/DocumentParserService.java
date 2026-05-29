@@ -35,7 +35,7 @@ public class DocumentParserService
         String normalizedType = StringUtils.lowerCase(StringUtils.removeStart(fileType.trim(), "."));
         try
         {
-            if ("txt".equals(normalizedType))
+            if ("txt".equals(normalizedType) || "md".equals(normalizedType))
             {
                 return Files.readString(Paths.get(filePath), StandardCharsets.UTF_8);
             }

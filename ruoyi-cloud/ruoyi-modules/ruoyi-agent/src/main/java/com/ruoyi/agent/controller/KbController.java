@@ -8,18 +8,25 @@ import java.nio.file.Paths;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import com.ruoyi.agent.core.KbIngestionService;
+import com.ruoyi.agent.domain.KbChunk;
 import com.ruoyi.agent.domain.KbDocument;
 import com.ruoyi.agent.service.IKbChunkService;
 import com.ruoyi.agent.service.IKbDocumentService;
 import com.ruoyi.agent.service.impl.KnowledgeQAAgentService;
+import com.ruoyi.common.core.constant.HttpStatus;
 import com.ruoyi.common.core.domain.R;
+import com.ruoyi.common.core.exception.ServiceException;
 import com.ruoyi.common.core.utils.StringUtils;
 import com.ruoyi.common.core.utils.file.FileTypeUtils;
+import com.ruoyi.common.security.annotation.RequiresRoles;
 import com.ruoyi.common.security.utils.SecurityUtils;
-import com.ruoyi.model.dto.ChatResponse;
+import com.ruoyi.model.api.dto.ChatResponse;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -43,11 +50,13 @@ public class KbController
 {
     private static final long MAX_FILE_SIZE = 10L * 1024L * 1024L;
 
-    private static final String[] ALLOWED_EXTENSIONS = { "pdf", "doc", "docx", "txt", "md", "html", "htm" };
+    private static final String[] ALLOWED_EXTENSIONS = { "pdf", "docx", "txt", "md" };
 
     private static final String STATUS_PENDING = "pending";
 
     private static final String UPLOAD_DIR = "uploads/kb";
+
+    private static final int DEFAULT_TOP_K = 5;
 
     @Autowired
     private IKbDocumentService kbDocumentService;
@@ -58,9 +67,13 @@ public class KbController
     @Autowired
     private KnowledgeQAAgentService knowledgeQAAgentService;
 
+    @Autowired
+    private KbIngestionService kbIngestionService;
+
     /**
      * 上传知识库文档
      */
+    @RequiresRoles("admin")
     @PostMapping("/document/upload")
     public R<KbDocument> upload(@RequestParam("file") MultipartFile file)
     {
@@ -77,9 +90,10 @@ public class KbController
         String extension = FileTypeUtils.getExtension(file);
         if (StringUtils.isEmpty(originalFilename) || StringUtils.isEmpty(extension) || !isAllowedExtension(extension))
         {
-            return R.fail("文件格式不正确，请上传 pdf、doc、docx、txt、md、html、htm 格式");
+            return R.fail("文件格式不正确，请上传 pdf、docx、txt、md 格式");
         }
 
+        Long currentUserId = requireCurrentUserId();
         try
         {
             Path uploadPath = Paths.get(System.getProperty("user.dir"), UPLOAD_DIR);
@@ -99,8 +113,11 @@ public class KbController
             document.setParseStatus(STATUS_PENDING);
             document.setEmbeddingStatus(STATUS_PENDING);
             document.setChunkCount(0);
-            document.setCreateUser(getCurrentUserId());
-            return R.ok(kbDocumentService.save(document));
+            document.setCreateUser(currentUserId);
+            KbDocument saved = kbDocumentService.save(document);
+
+            kbIngestionService.ingest(saved.getId(), targetPath.toAbsolutePath().toString(), document.getFileType());
+            return R.ok(saved);
         }
         catch (IOException e)
         {
@@ -124,6 +141,7 @@ public class KbController
     /**
      * 删除文档
      */
+    @RequiresRoles("admin")
     @DeleteMapping("/document/{id}")
     public R<Boolean> delete(@PathVariable Long id)
     {
@@ -135,6 +153,7 @@ public class KbController
     /**
      * 删除文档，兼容设计文档中的接口路径。
      */
+    @RequiresRoles("admin")
     @DeleteMapping("/document/delete/{id}")
     public R<Boolean> deleteAlias(@PathVariable Long id)
     {
@@ -142,16 +161,52 @@ public class KbController
     }
 
     /**
-     * 语义检索（待接入向量检索）。
+     * 重新向量化文档（设计 9.7.5）：对已入库切片重新生成向量并 upsert，
+     * 用于更换 Embedding 模型 / 维度后重建。异步执行。
+     */
+    @RequiresRoles("admin")
+    @PostMapping({"/document/{id}/reembed", "/reembed/{id}"})
+    public R<Boolean> reembed(@PathVariable Long id)
+    {
+        KbDocument document = kbDocumentService.getById(id);
+        if (document == null)
+        {
+            return R.fail("文档不存在");
+        }
+        kbIngestionService.reembedDocument(id);
+        return R.ok(Boolean.TRUE, "已触发重新向量化，请稍后查看状态");
+    }
+
+    /**
+     * 语义检索
      */
     @PostMapping("/search")
-    public R<List<Object>> search(@RequestBody SearchRequest request)
+    public R<List<Map<String, Object>>> search(@RequestBody SearchRequest request)
     {
         if (request == null || StringUtils.isEmpty(request.getQuery()))
         {
             return R.fail("查询内容不能为空");
         }
-        return R.ok(Collections.emptyList());
+        int topK = request.getTopK() == null || request.getTopK() <= 0 ? DEFAULT_TOP_K : request.getTopK();
+        List<KbChunk> chunks = kbChunkService.searchByKeyword(request.getQuery(), topK);
+        List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+        if (chunks != null)
+        {
+            for (KbChunk chunk : chunks)
+            {
+                if (chunk == null)
+                {
+                    continue;
+                }
+                Map<String, Object> item = new HashMap<String, Object>();
+                item.put("id", chunk.getId());
+                item.put("documentId", chunk.getDocumentId());
+                item.put("chunkIndex", chunk.getChunkIndex());
+                item.put("content", chunk.getContent());
+                result.add(item);
+            }
+        }
+        return R.ok(result);
     }
 
     /**
@@ -164,7 +219,7 @@ public class KbController
         {
             return R.fail("问题不能为空");
         }
-        return R.ok(knowledgeQAAgentService.ask(getCurrentUserId(), request.getQuestion()));
+        return R.ok(knowledgeQAAgentService.ask(requireCurrentUserId(), request.getQuestion()));
     }
 
     private boolean isAllowedExtension(String extension)
@@ -205,16 +260,22 @@ public class KbController
         return result.toString();
     }
 
-    private Long getCurrentUserId()
+    private Long requireCurrentUserId()
     {
+        Long userId;
         try
         {
-            return SecurityUtils.getUserId();
+            userId = SecurityUtils.getUserId();
         }
         catch (Exception e)
         {
-            return null;
+            throw new ServiceException("当前用户未登录", HttpStatus.UNAUTHORIZED);
         }
+        if (userId == null)
+        {
+            throw new ServiceException("当前用户未登录", HttpStatus.UNAUTHORIZED);
+        }
+        return userId;
     }
 
     /**
@@ -224,6 +285,8 @@ public class KbController
     {
         private String query;
 
+        private Integer topK;
+
         public String getQuery()
         {
             return query;
@@ -232,6 +295,16 @@ public class KbController
         public void setQuery(String query)
         {
             this.query = query;
+        }
+
+        public Integer getTopK()
+        {
+            return topK;
+        }
+
+        public void setTopK(Integer topK)
+        {
+            this.topK = topK;
         }
     }
 

@@ -4,9 +4,11 @@ import com.ruoyi.agent.core.PromptBuilder;
 import com.ruoyi.agent.domain.UserProfile;
 import com.ruoyi.agent.service.BaseAgentService;
 import com.ruoyi.agent.service.IUserProfileService;
-import com.ruoyi.model.dto.ChatRequest;
-import com.ruoyi.model.dto.ChatResponse;
-import com.ruoyi.model.router.ChatModelRouter;
+import com.ruoyi.common.core.constant.SecurityConstants;
+import com.ruoyi.common.core.domain.R;
+import com.ruoyi.model.api.RemoteModelService;
+import com.ruoyi.model.api.dto.ChatRequest;
+import com.ruoyi.model.api.dto.ChatResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +23,7 @@ public class CareerPlanAgentService extends BaseAgentService
     private static final String AGENT_TYPE = "career_plan";
 
     @Autowired
-    private ChatModelRouter chatModelRouter;
+    private RemoteModelService remoteModelService;
 
     @Autowired
     private PromptBuilder promptBuilder;
@@ -39,6 +41,7 @@ public class CareerPlanAgentService extends BaseAgentService
         request.setUserId(userId);
         request.setContent("请根据我的画像生成职业规划方案。");
         request.setHistory(buildSystemHistory(systemPrompt));
-        return chatModelRouter.chat(request);
+        R<ChatResponse> r = remoteModelService.chat(request, SecurityConstants.INNER);
+        return r == null ? null : r.getData();
     }
 }

@@ -1,5 +1,6 @@
 package com.ruoyi.agent.service;
 
+import java.util.List;
 import com.ruoyi.agent.domain.ResumeInfo;
 
 /**
@@ -12,6 +13,8 @@ public interface IResumeInfoService
     boolean save(ResumeInfo resumeInfo);
 
     ResumeInfo getByUserId(Long userId);
+
+    List<ResumeInfo> listByUserId(Long userId);
 
     ResumeInfo getById(Long id);
 

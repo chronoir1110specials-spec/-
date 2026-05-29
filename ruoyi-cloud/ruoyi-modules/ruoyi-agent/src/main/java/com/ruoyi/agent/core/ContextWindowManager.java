@@ -1,11 +1,12 @@
 package com.ruoyi.agent.core;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import com.ruoyi.agent.domain.ChatMessage;
 import com.ruoyi.agent.domain.ChatSession;
 import com.ruoyi.common.core.utils.StringUtils;
-import com.ruoyi.model.dto.ChatRequest.ChatMessageVo;
+import com.ruoyi.model.api.dto.ChatRequest.ChatMessageVo;
 import org.springframework.stereotype.Component;
 
 /**
@@ -84,6 +85,8 @@ public class ContextWindowManager
             usedTokens += msgTokens;
         }
 
+        // reverse to restore chronological order (loop built list newest-first)
+        Collections.reverse(context);
         return context;
     }
 

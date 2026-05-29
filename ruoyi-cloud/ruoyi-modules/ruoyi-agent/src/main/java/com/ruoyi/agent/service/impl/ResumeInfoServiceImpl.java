@@ -1,6 +1,8 @@
 package com.ruoyi.agent.service.impl;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.ruoyi.agent.domain.ResumeInfo;
@@ -55,6 +57,21 @@ public class ResumeInfoServiceImpl implements IResumeInfoService
                 .orderByDesc(ResumeInfo::getCreateTime)
                 .last("limit 1");
         return resumeInfoMapper.selectOne(queryWrapper);
+    }
+
+    @Override
+    public List<ResumeInfo> listByUserId(Long userId)
+    {
+        if (userId == null)
+        {
+            return Collections.emptyList();
+        }
+        LambdaQueryWrapper<ResumeInfo> queryWrapper = new LambdaQueryWrapper<ResumeInfo>()
+                .eq(ResumeInfo::getUserId, userId)
+                .eq(ResumeInfo::getDeleted, NOT_DELETED)
+                .orderByDesc(ResumeInfo::getUpdateTime)
+                .orderByDesc(ResumeInfo::getCreateTime);
+        return resumeInfoMapper.selectList(queryWrapper);
     }
 
     @Override
