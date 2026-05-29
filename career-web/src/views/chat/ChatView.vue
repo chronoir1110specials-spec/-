@@ -120,8 +120,8 @@ onMounted(loadSessions)
 .messages { flex: 1; overflow: auto; padding-right: 8px; }
 .message { display: flex; margin-bottom: 16px; }
 .message.user { justify-content: flex-end; }
-.bubble { max-width: 72%; border-radius: 14px; padding: 12px 14px; background: #1e293b; color: #e2e8f0; white-space: pre-wrap; }
-.message.user .bubble { background: #2563eb; color: #fff; }
-.role { font-size: 12px; opacity: .7; margin-bottom: 6px; }
+.bubble { max-width: 72%; border-radius: 14px; padding: 12px 14px; background: #f2f4f8; color: #1f2329; white-space: pre-wrap; border: 1px solid #e9ecf2; }
+.message.user .bubble { background: #4f7cff; color: #fff; border-color: #4f7cff; }
+.role { font-size: 12px; opacity: .65; margin-bottom: 6px; }
 .sender { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end; margin-top: 16px; }
 </style>

@@ -2,19 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 深色主题基础 */
+/* 浅色主题（简约） */
 :root {
-  --sidebar-bg: #1a1a2e;
-  --sidebar-text: #e0e0e0;
-  --sidebar-active: #3a3a5e;
-  --bg-primary: #0f0f1a;
-  --bg-secondary: #1a1a2e;
-  --bg-card: #16213e;
-  --text-primary: #e0e0e0;
-  --text-secondary: #a0a0b0;
-  --border-color: #2a2a4a;
-  --accent: #4fc3f7;
-  --accent-hover: #29b6f6;
+  --bg-primary: #f5f7fa;
+  --bg-card: #ffffff;
+  --text-primary: #1f2329;
+  --text-secondary: #8a909c;
+  --border-color: #e9ecf2;
+  --accent: #4f7cff;
+  --accent-soft: #eef3ff;
 }
 
 * {
@@ -25,7 +21,7 @@
 
 html, body, #app {
   height: 100%;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 body {
@@ -35,22 +31,22 @@ body {
 
 .app-shell {
   min-height: 100vh;
-  background: #0b1020;
+  background: var(--bg-primary);
 }
 
 .sidebar {
-  background: #121827;
-  border-right: 1px solid rgba(148, 163, 184, 0.16);
+  background: #ffffff;
+  border-right: 1px solid var(--border-color);
   transition: width 0.2s ease;
 }
 
 .brand {
-  height: 72px;
+  height: 64px;
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 0 18px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .brand.compact {
@@ -59,13 +55,13 @@ body {
 }
 
 .brand-mark {
-  width: 38px;
-  height: 38px;
-  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
   display: grid;
   place-items: center;
-  color: #06111f;
-  background: #67e8f9;
+  color: #ffffff;
+  background: var(--accent);
   font-weight: 800;
 }
 
@@ -75,34 +71,40 @@ body {
   line-height: 1.35;
 }
 
+.brand-text strong { color: var(--text-primary); }
+
 .brand-text span,
 .page-subtitle,
 .user-meta span {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 12px;
 }
 
 .nav-menu {
   border-right: 0;
-  padding: 12px 8px;
+  padding: 10px 8px;
 }
 
 .nav-menu .el-menu-item {
   border-radius: 8px;
   margin: 4px 0;
+  color: #5b6271;
 }
 
 .nav-menu .el-menu-item.is-active {
-  background: #2563eb;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .topbar {
-  height: 72px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(15, 23, 42, 0.96);
-  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 20px;
 }
 
 .topbar-left,
@@ -113,9 +115,9 @@ body {
 }
 
 .page-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--text-primary);
 }
 
 .user-meta {
@@ -124,9 +126,11 @@ body {
   line-height: 1.35;
 }
 
+.user-meta strong { color: var(--text-primary); font-size: 14px; }
+
 .content {
-  min-height: calc(100vh - 72px);
-  background: #0b1020;
+  min-height: calc(100vh - 64px);
+  background: var(--bg-primary);
   padding: 24px;
 }
 
@@ -136,11 +140,12 @@ body {
 }
 
 .panel {
-  background: #111827;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  border-radius: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
   padding: 20px;
-  color: #e5e7eb;
+  color: var(--text-primary);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
 }
 
 .panel-title {
@@ -150,15 +155,15 @@ body {
   margin-bottom: 16px;
   font-size: 16px;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--text-primary);
 }
 
 .muted {
-  color: #94a3b8;
+  color: var(--text-secondary);
 }
 
 .metric-value {
-  color: #f8fafc;
+  color: var(--text-primary);
   font-size: 30px;
   font-weight: 800;
   line-height: 1.1;
@@ -176,17 +181,8 @@ body {
   gap: 10px;
 }
 
-.el-card,
-.el-table,
-.el-upload-dragger {
-  --el-bg-color-overlay: #111827;
-  --el-fill-color-blank: #111827;
-  --el-border-color-light: rgba(148, 163, 184, 0.18);
-  color: #e5e7eb;
-}
-
 .el-card {
-  border-radius: 8px;
+  border-radius: 12px;
 }
 
 @media (max-width: 768px) {
@@ -210,12 +206,12 @@ body {
 
 /* 滚动条 */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-primary);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 3px;
+  background: #d4d9e2;
+  border-radius: 4px;
 }

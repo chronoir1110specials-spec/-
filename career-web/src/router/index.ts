@@ -12,9 +12,8 @@ const router = createRouter({
       path: '/',
       component: MainLayout,
       redirect: '/home',
-      meta: { requiresAuth: true },
       children: [
-        { path: 'home', name: 'home', component: () => import('@/views/home/HomeView.vue'), meta: { title: '首页', requiresAuth: true } },
+        { path: 'home', name: 'home', component: () => import('@/views/home/HomeView.vue'), meta: { title: '工作台', public: true } },
         { path: 'assessment', name: 'assessment', component: () => import('@/views/assessment/AssessmentListView.vue'), meta: { title: '职业测评', requiresAuth: true } },
         { path: 'assessment/:id', name: 'assessment-detail', component: () => import('@/views/assessment/AssessmentDetailView.vue'), meta: { title: '测评答题', requiresAuth: true } },
         { path: 'assessment/:id/result', name: 'assessment-result', component: () => import('@/views/assessment/AssessmentResultView.vue'), meta: { title: '测评结果', requiresAuth: true } },

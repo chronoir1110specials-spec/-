@@ -42,7 +42,7 @@ async function submit() {
 </template>
 
 <style scoped>
-.auth-page { min-height: 100vh; display: grid; place-items: center; background: #0f172a; }
-.auth-card { width: min(420px, calc(100vw - 32px)); }
-h1 { font-size: 28px; font-weight: 700; color: #f8fafc; }
+.auth-page { min-height: 100vh; display: grid; place-items: center; background: linear-gradient(120deg, #eef3ff 0%, #f5f7fa 100%); }
+.auth-card { width: min(420px, calc(100vw - 32px)); border-radius: 14px; }
+h1 { font-size: 26px; font-weight: 800; color: #1f2329; }
 </style>

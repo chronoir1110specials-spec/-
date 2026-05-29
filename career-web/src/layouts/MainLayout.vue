@@ -2,7 +2,6 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
-  Bell,
   Briefcase,
   ChatDotRound,
   DataAnalysis,
@@ -24,6 +23,7 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 
+const loggedIn = computed(() => !!userStore.token)
 const pageTitle = computed(() => String(route.meta.title ?? '就业辅导 Agent'))
 const displayName = computed(() => userStore.profile.name || userStore.profile.school || localStorage.getItem('career-username') || '当前用户')
 const displayTitle = computed(() => userStore.profile.title || userStore.profile.targetPosition || userStore.profile.jobStage || '求职学生')
@@ -60,7 +60,7 @@ const navItems = computed(() => {
 
 async function logout() {
   await userStore.logout()
-  router.replace('/login')
+  router.replace('/home')
 }
 </script>
 
@@ -93,13 +93,18 @@ async function logout() {
           </div>
         </div>
         <div class="topbar-right">
-          <el-badge :value="3" class="notice"><el-button circle :icon="Bell" /></el-badge>
-          <el-avatar>{{ displayName.slice(0, 1) }}</el-avatar>
-          <div class="user-meta">
-            <strong>{{ displayName }}</strong>
-            <span>{{ displayTitle }}</span>
-          </div>
-          <el-button link @click="logout">退出</el-button>
+          <template v-if="loggedIn">
+            <el-avatar :size="34">{{ displayName.slice(0, 1) }}</el-avatar>
+            <div class="user-meta">
+              <strong>{{ displayName }}</strong>
+              <span>{{ displayTitle }}</span>
+            </div>
+            <el-button link @click="logout">退出</el-button>
+          </template>
+          <template v-else>
+            <el-button round @click="router.push({ path: '/login', query: { redirect: route.fullPath } })">登录</el-button>
+            <el-button type="primary" round @click="router.push('/register')">注册</el-button>
+          </template>
         </div>
       </el-header>
 

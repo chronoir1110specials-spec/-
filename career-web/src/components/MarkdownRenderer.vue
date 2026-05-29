@@ -32,13 +32,14 @@ const rendered = computed(() => {
 .markdown-body :deep(ul),
 .markdown-body :deep(ol) { padding-left: 20px; margin: 6px 0; }
 .markdown-body :deep(code) {
-  background: rgba(148, 163, 184, .2);
+  background: #f0f2f5;
   padding: 1px 5px;
   border-radius: 4px;
   font-size: 0.9em;
 }
 .markdown-body :deep(pre) {
-  background: #0b1220;
+  background: #f6f8fa;
+  border: 1px solid #e9ecf2;
   padding: 12px;
   border-radius: 8px;
   overflow-x: auto;
@@ -47,14 +48,14 @@ const rendered = computed(() => {
 .markdown-body :deep(h1),
 .markdown-body :deep(h2),
 .markdown-body :deep(h3) { margin: 12px 0 8px; font-weight: 600; }
-.markdown-body :deep(a) { color: #60a5fa; text-decoration: underline; }
+.markdown-body :deep(a) { color: #4f7cff; text-decoration: underline; }
 .markdown-body :deep(blockquote) {
-  border-left: 3px solid #475569;
+  border-left: 3px solid #d4d9e2;
   padding-left: 12px;
-  color: #94a3b8;
+  color: #8a909c;
   margin: 8px 0;
 }
 .markdown-body :deep(table) { border-collapse: collapse; margin: 8px 0; }
 .markdown-body :deep(th),
-.markdown-body :deep(td) { border: 1px solid #475569; padding: 4px 8px; }
+.markdown-body :deep(td) { border: 1px solid #e9ecf2; padding: 4px 8px; }
 </style>
