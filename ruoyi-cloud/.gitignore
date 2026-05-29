@@ -41,6 +41,22 @@ nbdist/
 *.xml.versionsBackup
 *.swp
 
+# Docker local environment
+docker/.env
+
+# Docker local runtime data/logs
+docker/mysql/data/
+docker/mysql/logs/
+docker/redis/data/
+docker/nacos/logs/
+docker/nginx/logs/
+docker/ruoyi/uploadPath/
+docker/postgres/data/
+
+# Docker copied build artifacts
+docker/mysql/db/*.sql
+docker/ruoyi/**/jar/*.jar
+
 !*/build/*.java
 !*/build/*.html
 !*/build/*.xml

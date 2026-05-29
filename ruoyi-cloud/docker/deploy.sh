@@ -1,67 +1,80 @@
 #!/bin/sh
 
-# 使用说明，用来提示输入参数
 usage() {
-	echo "Usage: sh 执行脚本.sh [port|base|modules|stop|rm]"
-	exit 1
+    echo "Usage: sh deploy.sh [port|config|base|modules|extras|all|stop|rm]"
+    exit 1
 }
 
-# 开启所需端口
-port(){
-	firewall-cmd --add-port=80/tcp --permanent
-	firewall-cmd --add-port=8080/tcp --permanent
-	firewall-cmd --add-port=8848/tcp --permanent
-	firewall-cmd --add-port=9848/tcp --permanent
-	firewall-cmd --add-port=9849/tcp --permanent
-	firewall-cmd --add-port=6379/tcp --permanent
-	firewall-cmd --add-port=3306/tcp --permanent
-	firewall-cmd --add-port=9100/tcp --permanent
-	firewall-cmd --add-port=9200/tcp --permanent
-	firewall-cmd --add-port=9201/tcp --permanent
-	firewall-cmd --add-port=9202/tcp --permanent
-	firewall-cmd --add-port=9203/tcp --permanent
-	firewall-cmd --add-port=9300/tcp --permanent
-	service firewalld restart
+compose() {
+    if command -v docker >/dev/null 2>&1; then
+        docker compose "$@"
+    elif command -v docker-compose >/dev/null 2>&1; then
+        docker-compose "$@"
+    else
+        echo "docker compose or docker-compose is required" >&2
+        exit 1
+    fi
 }
 
-# 启动基础环境（必须）
-base(){
-	docker-compose up -d ruoyi-mysql ruoyi-redis ruoyi-nacos
+port() {
+    firewall-cmd --add-port=80/tcp --permanent
+    service firewalld restart
 }
 
-# 启动程序模块（必须）
-modules(){
-	docker-compose up -d ruoyi-nginx ruoyi-gateway ruoyi-auth ruoyi-modules-system
+config() {
+    compose --env-file .env config
 }
 
-# 关闭所有环境/模块
-stop(){
-	docker-compose stop
+base() {
+    compose --env-file .env up -d ruoyi-mysql ruoyi-redis ruoyi-nacos
 }
 
-# 删除所有环境/模块
-rm(){
-	docker-compose rm
+modules() {
+    compose --env-file .env up -d career-web ruoyi-gateway ruoyi-auth ruoyi-modules-system ruoyi-agent ruoyi-model ruoyi-knowledge
 }
 
-# 根据输入参数，选择执行对应方法，不输入则执行使用说明
+extras() {
+    compose --env-file .env up -d ruoyi-modules-file ruoyi-modules-gen ruoyi-modules-job ruoyi-visual-monitor
+}
+
+all() {
+    compose --env-file .env up -d
+}
+
+stop() {
+    compose --env-file .env stop
+}
+
+remove() {
+    compose --env-file .env rm
+}
+
 case "$1" in
 "port")
-	port
+    port
+;;
+"config")
+    config
 ;;
 "base")
-	base
+    base
 ;;
 "modules")
-	modules
+    modules
+;;
+"extras")
+    extras
+;;
+"all")
+    all
 ;;
 "stop")
-	stop
+    stop
 ;;
 "rm")
-	rm
+    remove
 ;;
 *)
-	usage
+    usage
 ;;
 esac

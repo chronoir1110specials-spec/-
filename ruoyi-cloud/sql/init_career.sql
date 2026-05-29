@@ -172,6 +172,7 @@ create table kb_chunk (
   chunk_version        int             default 1                  comment '切片版本',
   token_count          int             default null               comment '片段 Token 数',
   vector_status        varchar(30)     default null               comment '向量化状态',
+  embedding_vector     longtext                                   comment '向量值，JSON 数组形式存储',
   metadata             json                                       comment '元数据',
   create_time          datetime                                   comment '创建时间',
   update_time          datetime                                   comment '更新时间',
