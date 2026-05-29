@@ -12,23 +12,22 @@
 
 大语言模型具备较强的自然语言理解、内容生成、多轮对话、知识问答和任务规划能力。将大语言模型与 RAG 检索增强生成、Agent 智能体机制、Spring Cloud 微服务架构、Docker 容器化部署相结合，可以构建一个面向大学生就业场景的智能辅导系统，为学生提供简历优化、岗位分析、模拟面试、职业规划、就业政策问答等服务。
 
-本项目拟设计并实现一个基于 Spring Cloud、RAG 与大语言模型的大学生就业辅导 Agent 系统。系统采用前后端分离架构，后端基于 RuoYi-Cloud 与 Spring Cloud Alibaba 构建微服务体系，复用认证、权限、菜单、日志和网关等基础能力，前端基于 Vue3 构建交互页面，模型侧采用统一模型适配层对接 DigitalOcean Inference 中的 DeepSeek V4 Pro 作为主模型，并使用 GLM 5.1 作为兜底模型。系统结合 Agent 工具调用、对话记忆、动态 Prompt、结构化输出、模型调用拦截器和日志审计能力，形成一个可演示、可部署、可扩展的智能就业辅导平台。
+本项目拟设计并实现一个基于 Spring Cloud、RAG 与大语言模型的大学生就业辅导 Agent 系统。系统采用前后端分离架构，后端基于 RuoYi-Cloud 与 Spring Cloud Alibaba 构建微服务体系，复用认证、权限、菜单、日志和网关等基础能力，前端基于 Vue3 构建交互页面。模型侧通过统一模型适配层对接外部大模型 API，主模型和兜底模型均通过配置文件指定，本文档以 DeepSeek / GLM 类模型为示例。毕设阶段优先实现学生用户与管理员两个角色，围绕简历优化、岗位分析、知识库问答和智能对话构建核心闭环；模拟面试、职业规划、教师端、复杂 AgenticLoop 和 Prompt 后台配置作为扩展功能设计，形成一个可演示、可部署、可扩展的智能就业辅导平台。
 
 ### 1.3 项目目标
 
-本系统目标是为大学生提供智能化、个性化、可持续的就业辅导服务，主要目标包括：
+本系统目标是为大学生提供智能化、个性化、可持续的就业辅导服务。考虑本科毕设的开发周期和部署复杂度，系统目标收敛为以下内容：
 
-1. 构建面向大学生就业场景的智能 Agent 系统。
-2. 提供简历优化、岗位分析、模拟面试、职业规划、求职材料生成等核心功能。
-3. 基于 RAG 技术构建就业知识库，提高就业政策问答准确性和可追溯性。
-4. 设计 Agent 工具调用机制，使系统具备一定任务执行能力。
-5. 设计短期记忆和长期记忆机制，支持多轮对话和用户画像复用。
-6. 设计动态 Prompt 注入机制，根据学生年级、专业、求职方向调整回复策略。
-7. 设计结构化输出机制，使简历分析、岗位分析、面试点评结果便于前端展示。
-8. 设计模型适配层，固定支持 DeepSeek V4 Pro 主模型和 GLM 5.1 兜底模型。
-9. 基于 Spring Cloud Alibaba 实现微服务架构设计。
-10. 使用 Docker Compose 将系统部署到 VPS 服务器，实现站点化访问。
-11. 通过模型调用日志、Token 消耗统计、限流和兜底机制提升系统稳定性。
+1. 优先实现学生用户与管理员两个角色，完成学生端使用流程和后台管理流程。
+2. 围绕简历优化、岗位分析、知识库问答和智能对话构建核心业务闭环。
+3. 基于 RAG 技术构建就业知识库，提高就业政策、校招流程和求职资料问答的准确性与可追溯性。
+4. 设计统一模型适配层，通过配置文件指定主模型和兜底模型，避免业务代码绑定具体模型厂商。
+5. 设计基础 Agent Workflow 和工具调用机制，支撑简历分析、岗位关键词提取、知识库检索等任务。
+6. 设计用户画像、短期会话记忆和动态 Prompt，使系统能够结合学生专业、年级、目标岗位生成个性化建议。
+7. 设计结构化输出机制，使简历分析、岗位分析和知识库问答结果便于前端展示。
+8. 基于 RuoYi-Cloud 与 Spring Cloud Alibaba 完成模块化架构设计，实际实现阶段可合并部分服务降低复杂度。
+9. 使用 Docker Compose 将系统部署到 VPS 服务器，实现站点化访问。
+10. 模拟面试、职业规划、教师端、复杂 AgenticLoop 和 Prompt 后台配置作为扩展功能设计，不作为毕设核心交付范围。
 
 ---
 
@@ -38,15 +37,18 @@
 
 本系统定位为一个面向高校学生的智能就业辅导 Agent 平台。系统不是简单的聊天机器人，而是一个结合大语言模型、RAG 知识库、Agent 工具调用、多轮记忆、模型兜底和微服务架构的就业辅导应用系统。
 
-系统主要服务于以下场景：
+毕设阶段核心服务场景包括：
 
 - 学生简历优化
 - 岗位 JD 分析
+- 就业政策与校招流程知识库问答
+- 智能对话与基础求职咨询
+
+扩展服务场景包括：
+
 - 模拟面试训练
 - 职业规划建议
 - 求职材料生成
-- 就业政策问答
-- 校招流程咨询
 - 面试复盘总结
 - 学习路线规划
 
@@ -70,11 +72,11 @@ Docker 可部署站点
 
 本项目核心特色包括：
 
-1. 使用 DeepSeek V4 Pro 作为主模型，提升就业辅导文本生成质量。
-2. 使用 GLM 5.1 作为兜底模型，提高系统可用性。
-3. 通过模型适配层隔离模型调用细节，降低业务代码与模型厂商的耦合。
+1. 通过统一模型适配层对接外部大模型 API，主模型和兜底模型均可配置。
+2. 本文档以 DeepSeek / GLM 类模型为示例，实际模型名称、接口地址和 Embedding 维度以服务商控制台为准。
+3. 围绕简历优化、岗位分析、知识库问答和智能对话构建核心闭环，降低毕设实现风险。
 4. 基于 RAG 构建就业知识库，减少模型幻觉。
-5. 结合 Agent 工具调用机制，实现简历评分、岗位关键词提取、知识库检索等能力。
+5. 结合 Agent Workflow 和工具调用机制，实现简历评分、岗位关键词提取、知识库检索等能力。
 6. 引入对话记忆和用户画像，使系统能够进行连续化就业辅导。
 7. 引入动态 Prompt，根据学生个人情况生成更个性化的建议。
 8. 引入结构化输出，使前端能够以卡片、评分、标签等方式展示结果。
@@ -89,9 +91,9 @@ Docker 可部署站点
 
 | 角色 | 说明 |
 |---|---|
-| 学生用户 | 使用系统进行简历优化、岗位分析、模拟面试、就业咨询 |
+| 学生用户 | 使用系统进行简历优化、岗位分析、知识库问答和智能对话 |
 | 管理员 | 管理用户、知识库、模型配置、调用日志和系统数据 |
-| 就业指导教师 | 维护就业指导资料，查看学生使用情况，辅助就业指导 |
+| 就业指导教师 | 维护就业指导资料，查看学生使用情况，辅助就业指导，作为扩展角色 |
 
 本科毕设阶段建议优先实现学生用户和管理员两个角色，就业指导教师角色可以作为扩展设计。
 
@@ -109,11 +111,11 @@ Docker 可部署站点
 
 系统不在 VPS 上运行大模型，因此现有普通 VPS 即可承担前后端服务、数据库、Redis、Nacos、知识库服务和 Nginx 的部署任务，不需要额外配置 GPU 环境。
 
-大模型能力通过 DigitalOcean Key 调用 DeepSeek V4 Pro，并使用 GLM 5.1 作为兜底模型。通过每日调用限制、Token 统计、缓存和错误兜底等机制，可以控制模型调用成本。
+大模型能力通过配置的外部模型 API 调用，主模型和兜底模型均可在配置文件中指定。通过每日调用限制、Token 统计、缓存和错误兜底等机制，可以控制模型调用成本。
 
 ### 4.3 应用可行性
 
-大学生就业辅导具有明确的现实需求。系统可围绕学生求职流程提供持续服务，包括简历优化、岗位分析、面试训练、职业规划和政策问答。系统功能贴近学生实际求职场景，适合答辩演示，也适合作为 Java 后端项目经历。
+大学生就业辅导具有明确的现实需求。系统优先围绕学生求职流程中的简历优化、岗位分析、知识库问答和智能对话提供持续服务，面试训练和职业规划作为后续扩展能力。系统功能贴近学生实际求职场景，适合答辩演示，也适合作为 Java 后端项目经历。
 
 ---
 
@@ -136,7 +138,7 @@ Docker 可部署站点
 
 ### 5.1.2 用户画像模块
 
-系统需要维护学生用户的基础画像，用于动态 Prompt 和职业规划。
+系统需要维护学生用户的基础画像，用于动态 Prompt，后续也可支撑职业规划扩展能力。
 
 画像信息包括：
 
@@ -205,12 +207,12 @@ Docker 可部署站点
 
 简历文件解析方案：
 
-系统支持学生上传 PDF 或 Word 格式简历，并在后端转换为纯文本后再进入 Agent 分析流程。
+系统优先支持学生上传文本型 PDF 简历，并在后端转换为纯文本后再进入 Agent 分析流程。DOCX 简历解析可作为可选能力，复杂 Word 表格解析不作为核心要求。
 
 | 文件类型 | 解析方案 | 说明 |
 |---|---|---|
 | PDF | Apache PDFBox | 提取 PDF 中可选中文本，适合大多数文本型 PDF 简历 |
-| DOCX | Apache POI XWPF | 解析 Word 2007+ `.docx` 文档中的段落和表格文本 |
+| DOCX | Apache POI XWPF，可选支持 | 解析 Word 2007+ `.docx` 文档中的普通段落文本，复杂表格解析作为扩展 |
 | DOC | Apache POI HWPF，可选支持 | 老旧 `.doc` 格式兼容性较弱，毕设阶段可作为可选能力 |
 | 扫描件 PDF / 图片 | OCR，可选扩展 | 初期不作为核心功能；若无法提取文本，提示用户粘贴简历文本 |
 
@@ -268,6 +270,8 @@ Docker 可部署站点
 7. 学习路线建议。
 
 ### 5.1.6 模拟面试 Agent
+
+本模块作为扩展功能设计，毕设核心阶段可以先完成页面原型、接口预留和状态机设计，不要求完整实现多轮面试闭环。
 
 系统根据学生选择的岗位方向生成面试题，并支持多轮模拟面试。
 
@@ -327,6 +331,8 @@ FINISHED
 
 ### 5.1.7 职业规划 Agent
 
+本模块作为扩展功能设计，毕设核心阶段可以先保留设计说明和数据结构，不作为核心交付功能。
+
 系统根据学生专业、技能、兴趣和目标岗位，生成职业规划建议。
 
 功能包括：
@@ -341,6 +347,8 @@ FINISHED
 - 校招准备时间表生成
 
 ### 5.1.8 求职材料生成 Agent
+
+本模块可以作为智能对话能力的轻量扩展，核心阶段可优先实现自我介绍或求职邮件生成，其他材料生成能力后续补充。
 
 系统可以辅助学生生成常见求职材料。
 
@@ -357,6 +365,8 @@ FINISHED
 ### 5.1.9 就业知识库问答模块
 
 系统基于 RAG 技术，将就业政策、校招流程、简历模板、面试技巧等文档建立知识库，支持学生自然语言提问。
+
+毕设阶段优先支持文本型 PDF、Markdown、TXT 文档；扫描件 OCR、复杂 Word 表格解析作为扩展能力。
 
 功能包括：
 
@@ -428,7 +438,7 @@ FINISHED
 - 知识库管理
 - 文档管理
 - 模型配置
-- Agent Prompt 模板配置
+- Agent Prompt 模板配置（扩展）
 - 模型调用日志查看
 - Agent 任务日志查看
 - 系统统计
@@ -465,7 +475,7 @@ FINISHED
 
 ### 5.2.7 高可用性
 
-系统应具备模型兜底能力，当主模型 DeepSeek V4 Pro 调用失败时，可以自动切换到 GLM 5.1。
+系统应具备模型兜底能力，当配置的主模型调用失败时，可以自动切换到配置的兜底模型。
 
 ---
 
@@ -491,7 +501,7 @@ Spring Cloud Gateway
    ├── ruoyi-system：用户、角色、菜单和系统管理服务
    ├── ruoyi-agent：Agent 编排服务
    ├── ruoyi-knowledge：知识库服务
-   └── ruoyi-model：模型适配服务
+   └── ruoyi-model：模型适配服务（设计保留，毕设可合并至 ruoyi-agent）
    ↓
 基础设施
    ├── MySQL：业务数据
@@ -499,8 +509,8 @@ Spring Cloud Gateway
    ├── Nacos：注册中心与配置中心
    ├── PostgreSQL + pgvector / Chroma：向量数据库
    └── 外部模型服务
-       ├── DigitalOcean DeepSeek V4 Pro：主模型
-       └── GLM 5.1：兜底模型
+      ├── 外部主模型 API（示例：DeepSeek 类模型）
+      └── 外部兜底模型 API（示例：GLM 类模型）
 ```
 
 ### 6.2 系统分层
@@ -513,7 +523,7 @@ Spring Cloud Gateway
 | Agent 能力层 | 动态 Prompt、工具调用、记忆管理、结构化输出、拦截器 |
 | RAG 能力层 | 文档解析、文本切片、向量化、语义检索、引用来源 |
 | 数据存储层 | MySQL、Redis、向量数据库 |
-| 模型服务层 | DigitalOcean DeepSeek V4 Pro、GLM 5.1 |
+| 模型服务层 | 外部主模型 API、外部兜底模型 API、Embedding API |
 
 ### 6.3 微服务划分
 
@@ -524,8 +534,10 @@ Spring Cloud Gateway
 | ruoyi-system | 用户、角色、菜单、字典、参数、操作日志和系统管理 |
 | ruoyi-agent | Agent 核心调度，负责意图识别、任务编排、Prompt 构建、工具调用 |
 | ruoyi-knowledge | 文档上传、解析、切片、向量化、知识检索 |
-| ruoyi-model | 统一对接 DeepSeek V4 Pro 和 GLM 5.1，实现模型适配和兜底 |
+| ruoyi-model | 统一对接外部主模型和兜底模型，实现模型适配和兜底，毕设阶段可合并至 ruoyi-agent |
 | ruoyi-common | 公共模块，包含统一响应、异常处理、工具类和通用实体 |
+
+设计上保留独立的模型服务模块，实际毕设实现阶段可将模型适配逻辑合并到 Agent 服务中，降低部署和开发复杂度。
 
 ### 6.4 若依 Cloud 主体框架适配方案
 
@@ -541,14 +553,14 @@ Spring Cloud Gateway
 | ruoyi-common | 复用通用工具、统一响应、异常处理、权限注解和基础组件 |
 | ruoyi-agent | 新增模块，负责 Agent Runtime、任务编排、工具调用、记忆管理和任务日志 |
 | ruoyi-knowledge | 新增模块，负责知识库文档上传、解析、切片、向量化和语义检索 |
-| ruoyi-model | 新增模块，负责 DeepSeek V4 Pro、GLM 5.1 的统一适配、兜底、限流和 Token 统计 |
+| ruoyi-model | 新增模块，负责外部主模型、兜底模型的统一适配、兜底、限流和 Token 统计；毕设阶段可选独立 |
 | ruoyi-ui / ai-web | 复用或改造为后台管理端，学生端可单独保留 Vue3 页面 |
 
 使用若依时需要注意：
 
 - 若依只作为基础权限系统和微服务脚手架，不替代本项目的 Agent Runtime 和 RAG 核心设计。
-- 不建议把 Agent、RAG、模型调用逻辑全部写入 `ruoyi-system`，应独立为 `ruoyi-agent`、`ruoyi-knowledge`、`ruoyi-model` 模块，保持职责清晰。
-- 管理后台可以基于若依菜单体系扩展 Prompt 管理、知识库管理、模型配置、Agent 任务日志和安全审计页面。
+- 不建议把 Agent 和 RAG 核心逻辑全部写入 `ruoyi-system`，应至少独立为 `ruoyi-agent`、`ruoyi-knowledge` 模块，保持职责清晰；模型适配逻辑可以先合并在 `ruoyi-agent`，后续再拆分为 `ruoyi-model`。
+- 管理后台可以基于若依菜单体系扩展知识库管理、模型配置、Agent 任务日志和安全审计页面，Prompt 后台配置作为扩展功能。
 - 若依自带的操作日志可复用为后台行为审计，但模型调用日志、Agent 步骤日志和 RAG 检索日志应单独设计。
 - 如果若依前端版本与本文档的 Vue3 技术栈不完全一致，应以实际选用版本为准；学生端页面可以继续使用 Vue3 + Element Plus 独立实现。
 
@@ -577,12 +589,12 @@ ruoyi-knowledge
 
 ### 7.1 模型选择
 
-本系统固定使用两个模型：
+系统通过统一模型适配层对接外部大模型 API，主模型和兜底模型均通过配置文件指定。本文档以 DeepSeek / GLM 类模型为示例，实际模型名称、接口地址和 Embedding 维度以服务商控制台为准。
 
 | 模型角色 | 模型名称 | 调用方式 | 说明 |
 |---|---|---|---|
-| 主模型 | DeepSeek V4 Pro | DigitalOcean Key 调用 | 用于主要就业辅导任务 |
-| 兜底模型 | GLM 5.1 | API 调用 | 主模型失败时自动切换 |
+| 主模型 | 配置文件指定，示例为 DeepSeek 类模型 | 外部 API 调用 | 用于主要就业辅导任务 |
+| 兜底模型 | 配置文件指定，示例为 GLM 类模型 | 外部 API 调用 | 主模型失败时自动切换 |
 
 系统不在 VPS 上本地部署大模型，因此 VPS 不需要 GPU。
 
@@ -591,8 +603,8 @@ ruoyi-knowledge
 本项目选择 API 模型而不是 VPS 本地部署大模型，原因如下：
 
 1. 普通 VPS 没有 GPU，本地运行大模型速度慢。
-2. 本地小模型在简历优化、岗位分析、模拟面试等场景效果有限。
-3. DeepSeek V4 Pro 和 GLM 5.1 的文本生成能力更适合就业辅导场景。
+2. 本地小模型在简历优化、岗位分析、知识库问答等就业辅导场景效果有限。
+3. 外部大模型 API 的文本生成能力更适合就业辅导场景，具体模型可根据服务商可用性调整。
 4. API 模式部署更简单，答辩演示更稳定。
 5. 服务器成本更低，普通 VPS 即可完成系统部署。
 6. 模型能力与业务服务解耦，后续更容易升级。
@@ -612,8 +624,8 @@ public interface ChatModelClient {
 模型客户端实现：
 
 ```text
-DigitalOceanDeepSeekClient
-GLM51FallbackClient
+PrimaryChatModelClient
+FallbackChatModelClient
 ```
 
 业务代码只依赖统一接口：
@@ -633,11 +645,11 @@ Agent Service 发起模型调用
    ↓
 ChatModelRouter
    ↓
-优先调用 DigitalOcean DeepSeek V4 Pro
+优先调用配置的主模型 API
    ↓
 判断调用是否成功
    ├── 成功：返回主模型结果
-   └── 失败：调用 GLM 5.1 兜底模型
+   └── 失败：调用配置的兜底模型 API
            ↓
        返回兜底结果
 ```
@@ -659,26 +671,26 @@ ChatModelRouter
 ai:
   model:
     primary:
-      provider: digitalocean
-      model-name: deepseek-v4-pro
-      api-key: ${DIGITALOCEAN_MODEL_KEY}
-      base-url: ${DIGITALOCEAN_MODEL_BASE_URL}
+      provider: ${PRIMARY_MODEL_PROVIDER}
+      model-name: ${PRIMARY_MODEL_NAME}
+      api-key: ${PRIMARY_MODEL_KEY}
+      base-url: ${PRIMARY_MODEL_BASE_URL}
       timeout: 60000
       max-tokens: 4096
 
     fallback:
-      provider: glm
-      model-name: glm-5.1
-      api-key: ${GLM_API_KEY}
-      base-url: ${GLM_BASE_URL}
+      provider: ${FALLBACK_MODEL_PROVIDER}
+      model-name: ${FALLBACK_MODEL_NAME}
+      api-key: ${FALLBACK_MODEL_KEY}
+      base-url: ${FALLBACK_MODEL_BASE_URL}
       timeout: 60000
       max-tokens: 4096
 
     embedding:
-      provider: digitalocean
-      model-name: ${DIGITALOCEAN_EMBEDDING_MODEL}
-      api-key: ${DIGITALOCEAN_EMBEDDING_KEY}
-      base-url: ${DIGITALOCEAN_EMBEDDING_BASE_URL}
+      provider: ${EMBEDDING_PROVIDER}
+      model-name: ${EMBEDDING_MODEL}
+      api-key: ${EMBEDDING_KEY}
+      base-url: ${EMBEDDING_BASE_URL}
       dimension: ${EMBEDDING_DIMENSION}
       timeout: 30000
 
@@ -692,15 +704,20 @@ ai:
 `.env` 文件示例：
 
 ```env
-DIGITALOCEAN_MODEL_KEY=你的数字海洋模型Key
-DIGITALOCEAN_MODEL_BASE_URL=以DigitalOcean控制台提供的地址为准
+PRIMARY_MODEL_PROVIDER=digitalocean
+PRIMARY_MODEL_NAME=以服务商控制台实际模型名为准
+PRIMARY_MODEL_KEY=你的主模型API Key
+PRIMARY_MODEL_BASE_URL=以服务商控制台提供的地址为准
 
-GLM_API_KEY=你的GLM API Key
-GLM_BASE_URL=以GLM服务商控制台提供的地址为准
+FALLBACK_MODEL_PROVIDER=glm
+FALLBACK_MODEL_NAME=以服务商控制台实际模型名为准
+FALLBACK_MODEL_KEY=你的兜底模型API Key
+FALLBACK_MODEL_BASE_URL=以服务商控制台提供的地址为准
 
-DIGITALOCEAN_EMBEDDING_KEY=你的Embedding API Key
-DIGITALOCEAN_EMBEDDING_BASE_URL=以DigitalOcean控制台提供的Embedding地址为准
-DIGITALOCEAN_EMBEDDING_MODEL=qwen3-embedding-0.6b
+EMBEDDING_PROVIDER=以服务商控制台为准
+EMBEDDING_KEY=你的Embedding API Key
+EMBEDDING_BASE_URL=以服务商控制台提供的Embedding地址为准
+EMBEDDING_MODEL=以服务商控制台实际模型名为准
 EMBEDDING_DIMENSION=以实际Embedding模型返回维度为准
 ```
 
@@ -732,16 +749,17 @@ Agent = 大语言模型 + Prompt 模板 + 工具调用 + 对话记忆 + RAG 知�
 
 ### 8.2 Agent 类型
 
-系统内置多个就业辅导 Agent。
+系统内置多个就业辅导 Agent，其中毕设阶段优先实现核心 Agent，扩展 Agent 保留设计和接口预留。
 
-| Agent 名称 | 功能说明 |
-|---|---|
-| 简历优化 Agent | 分析和优化学生简历内容 |
-| 岗位分析 Agent | 分析岗位 JD，提取技能要求 |
-| 模拟面试 Agent | 生成面试题、点评回答、输出参考答案 |
-| 职业规划 Agent | 根据学生情况生成学习路线和求职规划 |
-| 知识库问答 Agent | 基于就业知识库回答政策和流程问题 |
-| 求职材料 Agent | 生成自我介绍、求职邮件、面试总结等材料 |
+| Agent 名称 | 功能说明 | 毕设优先级 |
+|---|---|---|
+| 智能对话 Agent | 面向学生提供基础求职咨询和多轮对话 | 核心 |
+| 简历优化 Agent | 分析和优化学生简历内容 | 核心 |
+| 岗位分析 Agent | 分析岗位 JD，提取技能要求 | 核心 |
+| 知识库问答 Agent | 基于就业知识库回答政策和流程问题 | 核心 |
+| 模拟面试 Agent | 生成面试题、点评回答、输出参考答案 | 扩展 |
+| 职业规划 Agent | 根据学生情况生成学习路线和求职规划 | 扩展 |
+| 求职材料 Agent | 生成自我介绍、求职邮件、面试总结等材料 | 扩展 |
 
 ### 8.3 Agent 执行流程
 
@@ -766,9 +784,9 @@ Agent Service 接收请求
    ↓
 调用模型路由器
    ↓
-优先调用 DeepSeek V4 Pro
+优先调用配置的主模型 API
    ↓
-异常时调用 GLM 5.1 兜底
+异常时调用配置的兜底模型 API
    ↓
 解析结构化输出
    ↓
@@ -792,7 +810,7 @@ Agent Service 可以通过以下方式选择 Agent：
 |---|---|---|
 | 帮我优化简历 | 简历优化 | 调用简历优化 Agent |
 | 分析这个岗位 | 岗位分析 | 调用岗位分析 Agent |
-| 模拟 Java 后端面试 | 模拟面试 | 调用模拟面试 Agent |
+| 模拟 Java 后端面试 | 模拟面试 | 调用模拟面试 Agent（扩展） |
 | 三方协议是什么 | 知识库问答 | 调用 RAG 检索 |
 | 帮我写自我介绍 | 材料生成 | 调用求职材料 Agent |
 
@@ -822,7 +840,7 @@ Agent Service 可以通过以下方式选择 Agent：
 
 - 保持多轮对话上下文
 - 避免用户重复说明目标岗位
-- 支持模拟面试连续追问
+- 后续可支持模拟面试连续追问
 
 #### 8.6.2 上下文窗口管理
 
@@ -835,7 +853,7 @@ Agent Service 可以通过以下方式选择 Agent：
 | 最近 N 轮保留 | 默认保留最近 6 - 10 轮用户与助手消息，保证当前对话连贯 |
 | Token 动态截断 | 构建 Prompt 前估算 Token，超过预算时从最旧消息开始裁剪 |
 | 历史摘要压缩 | 被裁剪的旧消息生成会话摘要，作为 `conversation_summary` 注入 Prompt |
-| Agent 分类预算 | 简历优化、岗位分析、知识库问答、模拟面试设置不同上下文预算 |
+| Agent 分类预算 | 简历优化、岗位分析、知识库问答设置不同上下文预算，模拟面试作为扩展预算 |
 | RAG 独立预算 | RAG 片段占用单独预算，避免知识片段挤占用户问题和历史上下文 |
 
 上下文组装顺序建议如下：
@@ -943,7 +961,7 @@ Prompt 中增加：请给出校招冲刺建议和面试复盘建议。
 }
 ```
 
-#### 8.8.3 模拟面试点评输出结构
+#### 8.8.3 模拟面试点评输出结构（扩展）
 
 ```json
 {
@@ -955,7 +973,120 @@ Prompt 中增加：请给出校招冲刺建议和面试复盘建议。
   "referenceAnswer": "参考答案内容"
 }
 ```
+### 8.8.4 结构化输出稳定性保障机制
 
+由于大语言模型在生成 JSON、评分结果、列表字段等结构化内容时，可能出现字段缺失、JSON 格式错误、额外输出解释文本、字段类型不一致等问题，因此系统需要设计结构化输出稳定性保障机制，避免前端解析失败或页面展示异常。
+
+本系统采用“Prompt 约束 + JSON Schema 校验 + 自动修复 + 降级展示”的方式保证结构化输出稳定性。
+
+#### 1. Prompt 约束
+
+对于简历优化、岗位分析等核心 Agent，以及模拟面试点评等扩展 Agent，Prompt 中必须明确要求模型只返回 JSON，不返回 Markdown、解释说明或多余文本。
+
+示例约束如下：
+
+```text
+请严格按照以下 JSON 格式返回结果。
+不要输出 Markdown。
+不要输出代码块标记。
+不要输出 JSON 之外的任何解释性文字。
+如果某个字段无法判断，请返回空数组、空字符串或 0，不要省略字段。
+```
+
+#### 2. 统一输出 Schema
+
+系统为不同 Agent 定义固定的输出 Schema，并在后端进行校验。
+
+例如简历优化 Agent 的输出结构包括：
+
+```
+json
+{
+  "score": 0,
+  "summary": "",
+  "problems": [],
+  "suggestions": [],
+  "optimizedText": "",
+  "keywords": []
+}
+```
+
+后端在接收到模型输出后，使用 JSON 解析器将模型结果转换为对应 DTO。如果解析成功，则返回结构化结果给前端；如果解析失败，则进入修复流程。
+
+#### 3. JSON 解析与字段校验
+
+后端需要校验以下内容：
+
+* 返回内容是否为合法 JSON。
+* 必填字段是否存在。
+* 字段类型是否正确。
+* 评分字段是否在合理范围内，例如 0 到 100。
+* 数组字段是否为空数组或字符串数组。
+* 文本字段是否为字符串类型。
+
+如果字段缺失但整体 JSON 可解析，系统可以使用默认值补齐字段。例如：
+
+* `score` 缺失时默认设置为 0。
+* `problems` 缺失时默认设置为空数组。
+* `suggestions` 缺失时默认设置为空数组。
+* `summary` 缺失时默认设置为空字符串。
+
+#### 4. 自动修复机制
+
+如果模型返回的内容不是合法 JSON，系统最多进行一次自动修复调用。
+
+修复 Prompt 示例：
+
+```text
+以下内容本应是 JSON，但格式不合法。
+请你只修复为合法 JSON，不要改变原有语义，不要添加解释文本。
+
+原始内容：
+{model_output}
+
+目标 JSON Schema：
+{schema}
+```
+
+修复后再次进行 JSON 解析和 Schema 校验。如果修复成功，则返回结构化结果；如果修复失败，则进入降级展示。
+
+#### 5. 降级展示机制
+
+当结构化解析和自动修复都失败时，系统不应直接报错，而是采用降级方案：
+
+* 后端将模型原始输出作为 Markdown 文本返回。
+* 前端隐藏评分卡片、标签卡片等结构化组件。
+* 前端改用普通文本区域展示模型回答。
+* 后端记录结构化解析失败日志，便于管理员排查 Prompt 或模型问题。
+
+降级返回示例：
+
+```
+json
+{
+  "structured": false,
+  "rawText": "模型原始回答内容",
+  "errorMessage": "结构化解析失败，已切换为普通文本展示"
+}
+```
+
+#### 6. 日志记录
+
+系统需要在模型调用日志或 Agent 步骤日志中记录结构化输出解析结果，包括：
+
+* Agent 类型。
+* 模型名称。
+* 是否解析成功。
+* 是否触发修复。
+* 修复是否成功。
+* 失败原因。
+* 原始输出摘要。
+
+日志中不保存完整简历、完整岗位 JD 或完整模型输出，只保存摘要和错误信息，避免泄露用户隐私。
+
+通过以上机制，即使模型偶尔输出不规范内容，系统也可以保证前端页面不会崩溃，并且能够通过降级展示继续向用户提供可读结果。
+
+```
 ### 8.9 模型调用拦截器设计
 
 系统设计模型调用拦截器，用于增强稳定性和可维护性。
@@ -968,7 +1099,7 @@ Prompt 中增加：请给出校招冲刺建议和面试复盘建议。
 | SensitiveDataInterceptor | 防止敏感信息进入日志 |
 | ModelLogInterceptor | 记录模型调用日志 |
 | TokenUsageInterceptor | 统计 Token 消耗 |
-| FallbackInterceptor | 主模型失败时触发 GLM 5.1 |
+| FallbackInterceptor | 主模型失败时触发配置的兜底模型 |
 | ErrorHandlerInterceptor | 处理模型调用异常 |
 
 ### 8.10 Agent Runtime 优化设计
@@ -1003,7 +1134,7 @@ AgentRuntime
 | ToolRegistry | 统一注册工具，负责工具输入校验、权限校验、执行和结果封装 |
 | MemoryManager | 管理短期记忆、长期画像和 Agent 私有中间结果 |
 | RagRetriever | 根据 Agent 策略执行知识库检索和引用来源拼接 |
-| ModelRouter | 调用 DeepSeek V4 Pro 和 GLM 5.1，实现兜底、重试和限流 |
+| ModelRouter | 调用配置的主模型和兜底模型，实现兜底、重试和限流 |
 | OutputParser | 校验模型输出 JSON 或 Markdown，失败时触发修复或降级 |
 | AgentTaskLogger | 记录任务状态、工具步骤、Token 消耗和错误信息 |
 
@@ -1058,9 +1189,9 @@ timeoutMs: 60000
 |---|---|---|
 | SingleCall | 求职邮件生成、自我介绍生成、简历片段润色 | 一次模型调用即可完成，不需要工具循环 |
 | Workflow | 简历优化、岗位 JD 分析、知识库问答 | 由代码控制步骤，例如解析、检索、拼 Prompt、结构化输出 |
-| AgenticLoop | 复杂职业规划、多轮模拟面试、长期求职复盘 | 允许模型在受控范围内多轮调用工具 |
+| AgenticLoop | 复杂职业规划、多轮模拟面试、长期求职复盘 | 允许模型在受控范围内多轮调用工具，作为扩展能力 |
 
-本科毕设阶段建议优先实现 SingleCall 和 Workflow。AgenticLoop 只用于模拟面试和复杂职业规划，且必须限制最大轮次、最大工具调用次数和最大 Token。
+本科毕设阶段建议优先实现 SingleCall 和 Workflow。复杂 AgenticLoop 作为扩展功能设计，不作为核心交付范围；如后续实现，必须限制最大轮次、最大工具调用次数和最大 Token。
 
 ### 8.13 统一工具协议
 
@@ -1192,6 +1323,8 @@ RAG 的作用包括：
 - 常见求职问题 FAQ
 - 行业岗位介绍资料
 
+毕设阶段优先支持文本型 PDF、Markdown、TXT 文档；扫描件 OCR、复杂 Word 表格解析作为扩展能力。
+
 ### 9.3 文档处理流程
 
 ```text
@@ -1227,9 +1360,9 @@ Agent Service 拼接参考资料
    ↓
 动态 Prompt 注入
    ↓
-调用 DeepSeek V4 Pro
+调用配置的主模型 API
    ↓
-失败时调用 GLM 5.1
+失败时调用配置的兜底模型 API
    ↓
 返回答案和引用来源
 ```
@@ -1275,16 +1408,16 @@ Embedding 是 RAG 知识库的核心环节，负责将就业政策、校招流�
 
 | 方案 | 用途 | 说明 |
 |---|---|---|
-| DigitalOcean Inference Embeddings API | 主方案 | 与 DeepSeek V4 Pro 调用体系保持一致，便于统一 API Key、调用日志和成本控制 |
-| qwen3-embedding-0.6b | 候选 Embedding 模型 | 适合中英文文本向量化，具体模型名称以 DigitalOcean 控制台实际可用模型为准 |
-| BGE-M3 / E5-Large | 备选方案 | 若 DigitalOcean Embedding 效果或稳定性不足，可替换为其他 Embedding 服务 |
+| 外部 Embeddings API | 主方案 | 通过配置文件指定服务商、模型名、接口地址和向量维度 |
+| qwen3-embedding-0.6b | 示例 Embedding 模型 | 适合中英文文本向量化，具体模型名称以服务商控制台实际可用模型为准 |
+| BGE-M3 / E5-Large | 备选方案 | 若主 Embedding 服务效果或稳定性不足，可替换为其他 Embedding 服务 |
 
 选型原则：
 
 - Embedding 模型必须支持中文语义检索，适合就业政策、简历、岗位描述等中文文本。
 - 向量维度以实际模型返回值为准，数据库向量字段维度必须与模型保持一致。
 - 一旦更换 Embedding 模型或向量维度，历史知识片段必须重新向量化。
-- Embedding 模型与对话生成模型可以不同，不要求与 DeepSeek V4 Pro 或 GLM 5.1 使用同一模型。
+- Embedding 模型与对话生成模型可以不同，不要求与主模型或兜底模型使用同一模型。
 - 毕设阶段优先使用 API 方式，避免在 VPS 上部署本地 Embedding 模型。
 
 #### 9.7.2 Embedding 服务封装
@@ -1713,15 +1846,15 @@ SSE 事件类型建议：
 | /agent/ask | POST | 统一 Agent 问答 |
 | /agent/resume/optimize | POST | 简历优化 |
 | /agent/job/analyze | POST | 岗位分析 |
-| /agent/interview/start | POST | 开始模拟面试 |
-| /agent/interview/answer | POST | 提交面试回答 |
-| /agent/interview/status/{sessionId} | GET | 查询模拟面试进度 |
-| /agent/interview/next | POST | 进入下一题 |
-| /agent/interview/summary/{sessionId} | GET | 获取面试总结 |
-| /agent/career/plan | POST | 职业规划 |
-| /agent/material/generate | POST | 求职材料生成 |
+| /agent/interview/start | POST | 开始模拟面试（扩展） |
+| /agent/interview/answer | POST | 提交面试回答（扩展） |
+| /agent/interview/status/{sessionId} | GET | 查询模拟面试进度（扩展） |
+| /agent/interview/next | POST | 进入下一题（扩展） |
+| /agent/interview/summary/{sessionId} | GET | 获取面试总结（扩展） |
+| /agent/career/plan | POST | 职业规划（扩展） |
+| /agent/material/generate | POST | 求职材料生成（扩展） |
 
-模拟面试接口状态流转：
+模拟面试接口状态流转（扩展设计）：
 
 ```text
 /agent/interview/start
@@ -1757,8 +1890,8 @@ SSE 事件类型建议：
 |---|---|---|
 | /model/config/list | GET | 查询模型配置 |
 | /model/config/save | POST | 保存模型配置 |
-| /model/test/primary | POST | 测试 DeepSeek V4 Pro |
-| /model/test/fallback | POST | 测试 GLM 5.1 |
+| /model/test/primary | POST | 测试配置的主模型 |
+| /model/test/fallback | POST | 测试配置的兜底模型 |
 | /model/log/list | GET | 查询模型调用日志 |
 
 ### 11.7 管理接口
@@ -1829,7 +1962,7 @@ SSE 事件类型建议：
 - 查看匹配评分
 - 查看面试准备建议
 
-### 12.6 模拟面试页面
+### 12.6 模拟面试页面（扩展）
 
 功能：
 
@@ -1841,7 +1974,7 @@ SSE 事件类型建议：
 - 查看参考答案
 - 生成面试总结
 
-### 12.7 职业规划页面
+### 12.7 职业规划页面（扩展）
 
 功能：
 
@@ -1866,8 +1999,8 @@ SSE 事件类型建议：
 
 功能：
 
-- 配置 DigitalOcean DeepSeek V4 Pro
-- 配置 GLM 5.1
+- 配置主模型 API（示例：DeepSeek 类模型）
+- 配置兜底模型 API（示例：GLM 类模型）
 - 测试主模型连接
 - 测试兜底模型连接
 - 查看调用统计
@@ -1904,12 +2037,13 @@ SSE 事件类型建议：
 | MySQL | 业务数据存储 |
 | Redis | 缓存、限流、短期记忆 |
 | PostgreSQL + pgvector / Chroma | 向量数据存储 |
-| DigitalOcean DeepSeek V4 Pro | 主模型 |
-| GLM 5.1 | 兜底模型 |
-| DigitalOcean Embeddings API | 文本向量化，用于 RAG 语义检索 |
+| 外部主模型 API | 主模型，示例为 DeepSeek 类模型，实际模型以配置为准 |
+| 外部兜底模型 API | 兜底模型，示例为 GLM 类模型，实际模型以配置为准 |
+| 外部 Embeddings API | 文本向量化，用于 RAG 语义检索，向量维度以实际模型返回为准 |
 | Spring AI EmbeddingModel | 可选，用于统一封装 Embedding 调用 |
-| Apache PDFBox | PDF 简历和知识库 PDF 文档文本解析 |
-| Apache POI | Word 简历和知识库 Word 文档文本解析 |
+| Apache PDFBox | 文本型 PDF 简历和知识库 PDF 文档文本解析 |
+| Markdown / TXT 解析 | 知识库 Markdown、TXT 文档解析 |
+| Apache POI | Word 文档解析，可作为复杂表格解析扩展能力 |
 | Docker Compose | 容器化部署 |
 
 ### 13.2 主体框架选型说明
@@ -2005,13 +2139,13 @@ Vue 前端静态资源
    ↓
 Spring Cloud Gateway / ruoyi-gateway
    ↓
-ruoyi-auth / ruoyi-system / ruoyi-agent / ruoyi-knowledge / ruoyi-model
+ruoyi-auth / ruoyi-system / ruoyi-agent / ruoyi-knowledge / ruoyi-model（可选）
    ↓
 MySQL / Redis / Nacos / 向量数据库
    ↓
 外部模型 API
-      ├── DigitalOcean DeepSeek V4 Pro
-      └── GLM 5.1
+      ├── 配置的主模型 API（示例：DeepSeek 类模型）
+      └── 配置的兜底模型 API（示例：GLM 类模型）
 ```
 
 ### 14.4 Docker 容器划分
@@ -2145,10 +2279,14 @@ services:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      DIGITALOCEAN_MODEL_KEY: ${DIGITALOCEAN_MODEL_KEY}
-      DIGITALOCEAN_MODEL_BASE_URL: ${DIGITALOCEAN_MODEL_BASE_URL}
-      GLM_API_KEY: ${GLM_API_KEY}
-      GLM_BASE_URL: ${GLM_BASE_URL}
+      PRIMARY_MODEL_PROVIDER: ${PRIMARY_MODEL_PROVIDER}
+      PRIMARY_MODEL_NAME: ${PRIMARY_MODEL_NAME}
+      PRIMARY_MODEL_KEY: ${PRIMARY_MODEL_KEY}
+      PRIMARY_MODEL_BASE_URL: ${PRIMARY_MODEL_BASE_URL}
+      FALLBACK_MODEL_PROVIDER: ${FALLBACK_MODEL_PROVIDER}
+      FALLBACK_MODEL_NAME: ${FALLBACK_MODEL_NAME}
+      FALLBACK_MODEL_KEY: ${FALLBACK_MODEL_KEY}
+      FALLBACK_MODEL_BASE_URL: ${FALLBACK_MODEL_BASE_URL}
     depends_on:
       - mysql
       - redis
@@ -2164,9 +2302,10 @@ services:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      DIGITALOCEAN_EMBEDDING_KEY: ${DIGITALOCEAN_EMBEDDING_KEY}
-      DIGITALOCEAN_EMBEDDING_BASE_URL: ${DIGITALOCEAN_EMBEDDING_BASE_URL}
-      DIGITALOCEAN_EMBEDDING_MODEL: ${DIGITALOCEAN_EMBEDDING_MODEL}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER}
+      EMBEDDING_KEY: ${EMBEDDING_KEY}
+      EMBEDDING_BASE_URL: ${EMBEDDING_BASE_URL}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL}
       EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION}
     depends_on:
       - mysql
@@ -2210,13 +2349,18 @@ JWT_SECRET=至少32字节随机字符串
 NACOS_AUTH_TOKEN=至少32字节随机字符串
 NACOS_AUTH_IDENTITY_KEY=自定义随机标识
 NACOS_AUTH_IDENTITY_VALUE=自定义随机值
-DIGITALOCEAN_MODEL_KEY=真实模型Key
-DIGITALOCEAN_MODEL_BASE_URL=真实模型地址
-GLM_API_KEY=真实GLM Key
-GLM_BASE_URL=真实GLM地址
-DIGITALOCEAN_EMBEDDING_KEY=真实Embedding Key
-DIGITALOCEAN_EMBEDDING_BASE_URL=真实Embedding地址
-DIGITALOCEAN_EMBEDDING_MODEL=qwen3-embedding-0.6b
+PRIMARY_MODEL_PROVIDER=真实主模型服务商
+PRIMARY_MODEL_NAME=真实主模型名
+PRIMARY_MODEL_KEY=真实主模型Key
+PRIMARY_MODEL_BASE_URL=真实主模型地址
+FALLBACK_MODEL_PROVIDER=真实兜底模型服务商
+FALLBACK_MODEL_NAME=真实兜底模型名
+FALLBACK_MODEL_KEY=真实兜底模型Key
+FALLBACK_MODEL_BASE_URL=真实兜底模型地址
+EMBEDDING_PROVIDER=真实Embedding服务商
+EMBEDDING_KEY=真实Embedding Key
+EMBEDDING_BASE_URL=真实Embedding地址
+EMBEDDING_MODEL=真实Embedding模型名
 EMBEDDING_DIMENSION=以实际Embedding模型返回维度为准
 ```
 
@@ -2229,7 +2373,7 @@ EMBEDDING_DIMENSION=以实际Embedding模型返回维度为准
 4. 编写 Dockerfile 和 docker-compose.yml。
 5. 通过 SSH 登录 VPS。
 6. 上传项目部署文件到 /opt/career-agent。
-7. 配置 `.env` 文件，填入强密码、JWT Secret、DigitalOcean Key、Embedding Key 和 GLM Key。
+7. 配置 `.env` 文件，填入强密码、JWT Secret、主模型 API Key、兜底模型 API Key 和 Embedding Key。
 8. 配置服务器防火墙，只开放 `22`、`80`、`443`，并限制 SSH 登录方式。
 9. 配置域名、HTTPS 证书和 Nginx 反向代理。
 10. 执行 `docker compose up -d` 启动服务。
@@ -2367,11 +2511,11 @@ server {
 - 单文件大小限制建议为 `10MB`，单用户每日上传数量也应限制。
 - 上传文件使用随机文件名保存，禁止使用用户原始文件名作为真实路径。
 - 上传目录不得放在 Nginx 静态资源目录下，禁止通过 URL 直接访问原始文件。
-- PDF / Word 解析统一使用 PDFBox / POI 等后端解析库，解析过程设置超时和异常捕获。
+- PDF / DOCX / Markdown / TXT 解析统一使用后端解析库，解析过程设置超时和异常捕获；扫描件 OCR 和复杂 Word 表格解析作为扩展能力。
 - 文件解析服务以低权限运行，解析失败不应影响主业务服务。
 - 对扫描件、加密文档、损坏文档等无法解析的文件返回明确提示，不进入模型调用链路。
 - 对压缩包、宏文件、可执行文件、脚本文件默认拒绝。
-- 知识库文档上传建议仅管理员或教师角色开放，普通学生不能直接污染公共知识库。
+- 知识库文档上传建议优先仅管理员开放，教师角色作为扩展后再开放维护权限，普通学生不能直接污染公共知识库。
 - 对解析出的文本做长度限制和清洗，避免超长文本导致模型调用成本失控。
 
 ### 15.7 模型调用与 RAG 安全
@@ -2388,7 +2532,7 @@ server {
 
 ### 15.8 API Key 与密钥安全
 
-- DigitalOcean Key、Embedding Key、GLM Key、JWT Secret、数据库密码、Redis 密码、Nacos Token 均存储在服务器 `.env` 或专用密钥管理系统中。
+- 主模型 API Key、兜底模型 API Key、Embedding Key、JWT Secret、数据库密码、Redis 密码、Nacos Token 均存储在服务器 `.env` 或专用密钥管理系统中。
 - `.env` 必须加入 `.gitignore`，仓库只保留 `.env.example`。
 - 管理后台展示 API Key 时只显示前后少量字符，中间使用星号脱敏。
 - 日志中不得打印完整 API Key、Authorization Header、Cookie、数据库连接串。
@@ -2477,8 +2621,8 @@ server {
 - 会话数量
 - 今日调用次数
 - 本月模型调用次数
-- DeepSeek V4 Pro 调用次数
-- GLM 5.1 兜底调用次数
+- 主模型调用次数
+- 兜底模型调用次数
 - 知识库文档数量
 - 模型平均响应时间
 - 模型调用失败率
@@ -2558,8 +2702,8 @@ college-career-agent
 任务：
 
 - 设计模型适配接口。
-- 接入 DigitalOcean DeepSeek V4 Pro。
-- 接入 GLM 5.1 兜底模型。
+- 接入配置的主模型 API，本文档以 DeepSeek 类模型为示例。
+- 接入配置的兜底模型 API，本文档以 GLM 类模型为示例。
 - 实现模型路由和兜底策略。
 - 实现基础智能对话。
 - 实现 SSE 流式输出接口。
@@ -2570,7 +2714,7 @@ college-career-agent
 
 任务：
 
-- 实现动态 Prompt。
+- 实现基础动态 Prompt，Prompt 后台配置作为扩展功能。
 - 实现短期记忆和长期记忆。
 - 实现上下文窗口裁剪和历史摘要压缩。
 - 实现结构化输出解析。
@@ -2581,19 +2725,18 @@ college-career-agent
 
 任务：
 
+- 实现智能对话 Agent。
 - 实现简历优化 Agent。
-- 实现 PDF / Word 简历文本解析。
+- 实现文本型 PDF 简历文本解析，Word 复杂表格解析作为扩展。
 - 实现岗位分析 Agent。
-- 实现求职材料生成 Agent。
-- 实现模拟面试 Agent 状态机。
-- 实现职业规划 Agent。
+- 求职材料生成、模拟面试状态机和职业规划 Agent 作为扩展功能设计。
 
 ### 第五阶段：RAG 知识库
 
 任务：
 
-- 实现文档上传。
-- 实现文档解析。
+- 实现文档上传，优先支持文本型 PDF、Markdown、TXT。
+- 实现基础文档解析，扫描件 OCR 和复杂 Word 表格解析作为扩展。
 - 实现文本切片。
 - 实现 Embedding 生成。
 - 实现向量检索。
@@ -2633,10 +2776,10 @@ college-career-agent
 | 对话模块 | 创建会话、发送消息、查询历史 |
 | 简历优化 | 输入简历后返回优化建议 |
 | 岗位分析 | 输入 JD 后返回岗位分析 |
-| 模拟面试 | 生成问题、点评回答 |
+| 模拟面试（扩展） | 生成问题、点评回答 |
 | 知识库 | 上传文档、检索、问答 |
-| 模型配置 | 测试 DeepSeek V4 Pro 和 GLM 5.1 |
-| 模型兜底 | 主模型失败后自动切换 GLM 5.1 |
+| 模型配置 | 测试配置的主模型和兜底模型 |
+| 模型兜底 | 主模型失败后自动切换配置的兜底模型 |
 | 管理后台 | 用户管理、文档管理、日志查看 |
 
 ### 19.2 性能测试
@@ -2646,8 +2789,8 @@ college-career-agent
 - 登录接口响应时间
 - 对话接口响应时间
 - 知识库检索耗时
-- DeepSeek V4 Pro 调用耗时
-- GLM 5.1 兜底调用耗时
+- 主模型调用耗时
+- 兜底模型调用耗时
 - 并发访问能力
 
 ### 19.3 安全测试
@@ -2680,10 +2823,10 @@ college-career-agent
 本项目创新点包括：
 
 1. 将大语言模型应用于大学生就业辅导场景，提升就业指导智能化水平。
-2. 设计多类型就业辅导 Agent，覆盖简历优化、岗位分析、模拟面试、职业规划等场景。
+2. 设计多类型就业辅导 Agent，核心覆盖简历优化、岗位分析、知识库问答和智能对话，模拟面试与职业规划作为扩展场景。
 3. 基于 RAG 技术构建就业知识库，提高就业政策问答的准确性和可追溯性。
-4. 使用 DeepSeek V4 Pro 作为主模型，使用 GLM 5.1 作为兜底模型，提升系统可用性。
-5. 设计模型适配层和模型路由器，实现主模型与兜底模型解耦。
+4. 设计统一模型适配层，通过配置文件指定主模型与兜底模型，本文档以 DeepSeek / GLM 类模型为示例。
+5. 设计模型适配层和模型路由器，实现业务逻辑与具体模型厂商解耦。
 6. 引入 Agent 工具调用机制，使系统不仅能问答，还能执行简历分析、岗位关键词提取、知识库检索等任务。
 7. 引入用户画像和动态 Prompt，使就业辅导结果更个性化。
 8. 引入结构化输出，使前端能够更清晰地展示评分、标签、建议和优化内容。
@@ -2713,12 +2856,12 @@ college-career-agent
 
 问题：
 
-DeepSeek V4 Pro 可能出现超时、限流、接口异常等情况。
+配置的主模型 API 可能出现超时、限流、接口异常等情况。
 
 解决方案：
 
 - 设计模型路由器。
-- 主模型失败时自动切换 GLM 5.1。
+- 主模型失败时自动切换配置的兜底模型。
 - 记录兜底调用日志。
 - 前端展示友好提示。
 - 后台统计兜底触发次数。
@@ -2786,7 +2929,7 @@ Spring Cloud 服务较多，部署和配置复杂度较高。
 可以在简历中这样描述本项目：
 
 ```text
-基于 Spring Cloud、RAG 与大语言模型设计并实现大学生就业辅导 Agent 系统，系统面向高校学生求职场景，提供简历优化、岗位 JD 分析、模拟面试、职业规划和就业知识库问答等功能。项目基于 RuoYi-Cloud 和 Spring Cloud Alibaba 构建微服务架构，复用网关、认证、权限、菜单和后台管理基础能力，新增 Agent、Knowledge、Model 等 AI 业务模块，设计模型适配层对接 DigitalOcean DeepSeek V4 Pro，并使用 GLM 5.1 作为兜底模型，通过 RAG 检索增强生成技术实现就业知识库问答，最终使用 Docker Compose 部署到现有 VPS 服务器。
+基于 Spring Cloud、RAG 与大语言模型设计并实现大学生就业辅导 Agent 系统，系统面向高校学生求职场景，优先提供简历优化、岗位 JD 分析、知识库问答和智能对话等核心功能。项目基于 RuoYi-Cloud 和 Spring Cloud Alibaba 构建模块化后端架构，复用网关、认证、权限、菜单和后台管理基础能力，新增 Agent、Knowledge 等 AI 业务模块，设计统一模型适配层对接外部大模型 API，主模型和兜底模型通过配置文件指定，并通过 RAG 检索增强生成技术实现就业知识库问答，最终使用 Docker Compose 部署到现有 VPS 服务器。
 ```
 
 技术亮点可以写：
@@ -2795,9 +2938,9 @@ Spring Cloud 服务较多，部署和配置复杂度较高。
 - 基于 RuoYi-Cloud 搭建主体工程，复用认证、权限、菜单、日志和微服务基础能力。
 - 使用 Spring Cloud Gateway / ruoyi-gateway 实现统一入口、JWT 鉴权和请求转发。
 - 使用 Nacos 实现服务注册发现和配置管理。
-- 设计模型适配层和模型路由器，实现 DeepSeek V4 Pro 主模型与 GLM 5.1 兜底模型切换。
-- 设计 RAG 知识库流程，实现文档解析、文本切片、向量化和语义检索。
-- 设计多类型 Agent Prompt 模板，实现简历优化、岗位分析、模拟面试等就业辅导能力。
+- 设计模型适配层和模型路由器，实现配置化主模型与兜底模型切换。
+- 设计 RAG 知识库流程，优先支持文本型 PDF、Markdown、TXT 的解析、切片、向量化和语义检索。
+- 设计多类型 Agent Prompt 模板，实现简历优化、岗位分析、知识库问答和智能对话等就业辅导能力。
 - 引入用户画像和动态 Prompt，根据学生专业、年级、目标岗位生成个性化建议。
 - 使用 Redis 保存短期记忆，MySQL 保存长期会话和用户画像。
 - 使用结构化输出解析模型结果，支持前端以评分、标签、建议卡片方式展示。
@@ -2809,8 +2952,8 @@ Spring Cloud 服务较多，部署和配置复杂度较高。
 
 ## 24. 总结
 
-本文档设计了一个基于 Spring Cloud、RAG 与大语言模型的大学生就业辅导 Agent 系统。系统以大学生求职就业为核心场景，结合 RuoYi-Cloud、Spring Cloud Alibaba、DeepSeek V4 Pro、GLM 5.1、RAG 检索增强生成、Agent 工具调用、动态 Prompt、多轮记忆、结构化输出、微服务架构和 Docker 容器化部署，实现简历优化、岗位分析、模拟面试、职业规划、求职材料生成和就业知识库问答等功能。
+本文档设计了一个基于 Spring Cloud、RAG 与大语言模型的大学生就业辅导 Agent 系统。系统以大学生求职就业为核心场景，结合 RuoYi-Cloud、Spring Cloud Alibaba、外部大模型 API、RAG 检索增强生成、Agent 工具调用、动态 Prompt、多轮记忆、结构化输出、模块化后端架构和 Docker 容器化部署，优先实现简历优化、岗位分析、知识库问答和智能对话等功能。
 
-与本地运行开源模型的方案相比，本系统采用大模型 API 调用方式，能够提升回答质量，降低 VPS 硬件要求，并增强答辩演示稳定性。同时，系统通过 GLM 5.1 兜底机制提高了模型调用可用性，通过日志与 Token 统计机制增强了系统可维护性和成本可控性。
+与本地运行开源模型的方案相比，本系统采用大模型 API 调用方式，能够提升回答质量，降低 VPS 硬件要求，并增强答辩演示稳定性。同时，系统通过配置化兜底模型机制提高了模型调用可用性，通过日志与 Token 统计机制增强了系统可维护性和成本可控性。
 
 该项目既具备实际应用价值，也能体现 Java 后端开发、微服务架构、AI Agent 应用开发、RAG 知识库设计、模型适配和 Docker 部署等技术能力，适合作为本科毕业设计项目和个人项目经历。
