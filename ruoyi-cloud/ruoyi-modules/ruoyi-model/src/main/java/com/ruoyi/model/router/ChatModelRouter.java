@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -34,19 +35,28 @@ public class ChatModelRouter implements ChatModelClient
     @Autowired
     private IModelCallLogService modelCallLogService;
 
+    /** 主模型失败后的重试次数（设计 7.4 router.retry-times，默认 1） */
+    @Value("${ai.model.router.retry-times:1}")
+    private int retryTimes;
+
     @Override
     public ChatResponse chat(ChatRequest request)
     {
-        ChatResponse response = primaryClient.chat(request);
-        if (response != null && response.isSuccess() && StringUtils.isNotEmpty(response.getContent()))
+        int attempts = 1 + Math.max(0, retryTimes);
+        ChatResponse response = null;
+        // 主模型：失败（超时/5xx/429/空内容/异常/格式不符）则重试，重试耗尽再兜底
+        for (int i = 1; i <= attempts; i++)
         {
+            response = primaryClient.chat(request);
             logModelCall(request, response);
-            return response;
+            if (isUsable(response))
+            {
+                return response;
+            }
+            log.warn("主模型第 {}/{} 次调用失败: {}", i, attempts, reasonOf(response));
         }
 
-        String errorMessage = response == null ? "主模型返回空响应" : response.getErrorMessage();
-        logModelCall(request, response);
-        log.warn("Primary model failed: {}, falling back to GLM", errorMessage);
+        log.warn("主模型重试耗尽({} 次)，触发兜底模型。原因: {}", attempts, reasonOf(response));
         ChatResponse fallbackResp = fallbackClient.chat(request);
         if (fallbackResp != null)
         {
@@ -54,6 +64,30 @@ public class ChatModelRouter implements ChatModelClient
         }
         logModelCall(request, fallbackResp);
         return fallbackResp;
+    }
+
+    /**
+     * 判断响应是否可用（成功且非空内容）。
+     */
+    private boolean isUsable(ChatResponse response)
+    {
+        return response != null && response.isSuccess() && StringUtils.isNotEmpty(response.getContent());
+    }
+
+    /**
+     * 提取失败原因。
+     */
+    private String reasonOf(ChatResponse response)
+    {
+        if (response == null)
+        {
+            return "空响应";
+        }
+        if (!response.isSuccess())
+        {
+            return StringUtils.isEmpty(response.getErrorMessage()) ? "调用失败" : response.getErrorMessage();
+        }
+        return "返回空内容";
     }
 
     /**

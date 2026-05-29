@@ -29,6 +29,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectModelConfigVo"/>
         where model_role = #{modelRole}
           and deleted = 0
+          and enabled = 1
         limit 1
     </select>
 

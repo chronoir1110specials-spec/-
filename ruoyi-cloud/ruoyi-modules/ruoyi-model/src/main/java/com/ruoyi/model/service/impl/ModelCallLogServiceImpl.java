@@ -32,7 +32,7 @@ public class ModelCallLogServiceImpl implements IModelCallLogService
      *
      * @param modelCallLog 模型调用日志
      */
-    @Async
+    @Async("modelLogExecutor")
     @Override
     public void logCall(ModelCallLog modelCallLog)
     {

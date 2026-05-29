@@ -81,9 +81,25 @@ public abstract class AbstractHttpChatClient implements ChatModelClient
             ResponseEntity<Map> responseEntity = restTemplate.postForEntity(buildChatCompletionsUrl(), entity, Map.class);
             response = parseResponse(responseEntity.getBody());
         }
+        catch (org.springframework.web.client.HttpServerErrorException e)
+        {
+            // 5xx 服务端错误（设计 7.4 兜底条件）
+            response = ChatResponse.fail("模型服务端错误(" + e.getStatusCode() + ")");
+        }
+        catch (org.springframework.web.client.HttpClientErrorException e)
+        {
+            // 429 限流 / 其它 4xx（设计 7.4 兜底条件）
+            boolean rateLimited = e.getStatusCode().value() == 429;
+            response = ChatResponse.fail(rateLimited ? "模型限流(429)" : "模型客户端错误(" + e.getStatusCode() + ")");
+        }
+        catch (org.springframework.web.client.ResourceAccessException e)
+        {
+            // 连接/读取超时（设计 7.4 兜底条件）
+            response = ChatResponse.fail("模型调用超时或网络异常: " + e.getMessage());
+        }
         catch (Exception e)
         {
-            response = ChatResponse.fail(e.getMessage());
+            response = ChatResponse.fail("模型调用异常: " + e.getMessage());
         }
         finally
         {

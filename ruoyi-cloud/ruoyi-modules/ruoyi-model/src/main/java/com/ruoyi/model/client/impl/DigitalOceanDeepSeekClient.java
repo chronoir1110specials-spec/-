@@ -17,7 +17,11 @@ public class DigitalOceanDeepSeekClient extends AbstractHttpChatClient
 
     private static final String DEFAULT_PROVIDER = "digitalocean";
 
+    private static final long CACHE_TTL_MILLIS = 30_000L;
+
     private volatile ModelConfig primaryConfig;
+
+    private volatile long lastLoadTime = 0L;
 
     @Autowired
     private IModelConfigService modelConfigService;
@@ -64,9 +68,17 @@ public class DigitalOceanDeepSeekClient extends AbstractHttpChatClient
      */
     protected ModelConfig getPrimaryConfig()
     {
-        if (primaryConfig == null)
+        long now = System.currentTimeMillis();
+        if (primaryConfig == null || now - lastLoadTime > CACHE_TTL_MILLIS)
         {
-            primaryConfig = modelConfigService.getEnabledPrimary();
+            synchronized (this)
+            {
+                if (primaryConfig == null || now - lastLoadTime > CACHE_TTL_MILLIS)
+                {
+                    primaryConfig = modelConfigService.getEnabledPrimary();
+                    lastLoadTime = System.currentTimeMillis();
+                }
+            }
         }
         return primaryConfig;
     }

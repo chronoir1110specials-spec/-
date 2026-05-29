@@ -1,26 +1,19 @@
-package com.ruoyi.model.domain;
+package com.ruoyi.model.api.domain;
 
 import java.io.Serializable;
 import java.util.Date;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
- * 模型配置对象 model_config
+ * 模型配置对象（API 层纯 POJO，无 MyBatis-Plus 注解）
  *
  * @author ruoyi
  */
-@TableName("model_config")
 public class ModelConfig implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
     /** 主键 */
-    @TableId(type = IdType.AUTO)
     private Long id;
 
     /** primary / fallback / embedding */
@@ -35,7 +28,7 @@ public class ModelConfig implements Serializable
     /** API 地址 */
     private String baseUrl;
 
-    /** API Key，加密存储 */
+    /** API Key */
     private String apiKey;
 
     /** 是否启用 */
@@ -44,7 +37,7 @@ public class ModelConfig implements Serializable
     /** 最大输出长度 */
     private Integer maxTokens;
 
-    /** Embedding 模型向量维度，仅向量模型使用 */
+    /** Embedding 模型向量维度 */
     private Integer embeddingDimension;
 
     /** 超时时间 */
@@ -175,24 +168,5 @@ public class ModelConfig implements Serializable
     public void setDeleted(Integer deleted)
     {
         this.deleted = deleted;
-    }
-
-    @Override
-    public String toString()
-    {
-        return new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE)
-                .append("id", getId())
-                .append("modelRole", getModelRole())
-                .append("provider", getProvider())
-                .append("modelName", getModelName())
-                .append("baseUrl", getBaseUrl())
-                .append("apiKey", "***")
-                .append("enabled", getEnabled())
-                .append("maxTokens", getMaxTokens())
-                .append("embeddingDimension", getEmbeddingDimension())
-                .append("timeout", getTimeout())
-                .append("createTime", getCreateTime())
-                .append("deleted", getDeleted())
-                .toString();
     }
 }

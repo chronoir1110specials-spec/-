@@ -2,7 +2,6 @@ package com.ruoyi.model;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
 import com.ruoyi.common.security.annotation.EnableCustomConfig;
 import com.ruoyi.common.security.annotation.EnableRyFeignClients;
 
@@ -13,7 +12,7 @@ import com.ruoyi.common.security.annotation.EnableRyFeignClients;
  */
 @EnableCustomConfig
 @EnableRyFeignClients
-@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class })
+@SpringBootApplication
 public class RuoYiModelApplication
 {
     public static void main(String[] args)

@@ -102,7 +102,15 @@ public class ModelConfigServiceImpl implements IModelConfigService
         LambdaQueryWrapper<ModelConfig> queryWrapper = new LambdaQueryWrapper<ModelConfig>()
                 .eq(ModelConfig::getDeleted, NOT_DELETED)
                 .orderByAsc(ModelConfig::getId);
-        return modelConfigMapper.selectList(queryWrapper);
+        List<ModelConfig> configs = modelConfigMapper.selectList(queryWrapper);
+        if (configs != null)
+        {
+            for (ModelConfig config : configs)
+            {
+                maskApiKey(config);
+            }
+        }
+        return configs;
     }
 
     /**
@@ -132,8 +140,14 @@ public class ModelConfigServiceImpl implements IModelConfigService
         }
         else
         {
+            ModelConfig existing = modelConfigMapper.selectById(config.getId());
+            if (existing != null && isMaskedOrEmpty(config.getApiKey()))
+            {
+                config.setApiKey(existing.getApiKey());
+            }
             modelConfigMapper.updateById(config);
         }
+        maskApiKey(config);
         return config;
     }
 
@@ -154,6 +168,19 @@ public class ModelConfigServiceImpl implements IModelConfigService
                 .eq(ModelConfig::getModelRole, config.getModelRole())
                 .eq(ModelConfig::getDeleted, NOT_DELETED);
         return modelConfigMapper.update(config, updateWrapper) > 0;
+    }
+
+    private void maskApiKey(ModelConfig config)
+    {
+        if (config != null && config.getApiKey() != null && !config.getApiKey().trim().isEmpty())
+        {
+            config.setApiKey("******");
+        }
+    }
+
+    private boolean isMaskedOrEmpty(String apiKey)
+    {
+        return apiKey == null || apiKey.trim().isEmpty() || apiKey.indexOf('*') >= 0;
     }
 
     /**

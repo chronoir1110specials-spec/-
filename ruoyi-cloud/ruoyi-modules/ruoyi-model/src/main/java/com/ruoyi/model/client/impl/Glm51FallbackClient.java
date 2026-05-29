@@ -19,7 +19,11 @@ public class Glm51FallbackClient extends AbstractHttpChatClient
 
     private static final String DEFAULT_BASE_URL = "https://open.bigmodel.cn/api/paas/v4";
 
+    private static final long CACHE_TTL_MILLIS = 30_000L;
+
     private volatile ModelConfig fallbackConfig;
+
+    private volatile long lastLoadTime = 0L;
 
     @Autowired
     private IModelConfigService modelConfigService;
@@ -66,9 +70,17 @@ public class Glm51FallbackClient extends AbstractHttpChatClient
      */
     protected ModelConfig getFallbackConfig()
     {
-        if (fallbackConfig == null)
+        long now = System.currentTimeMillis();
+        if (fallbackConfig == null || now - lastLoadTime > CACHE_TTL_MILLIS)
         {
-            fallbackConfig = modelConfigService.getEnabledFallback();
+            synchronized (this)
+            {
+                if (fallbackConfig == null || now - lastLoadTime > CACHE_TTL_MILLIS)
+                {
+                    fallbackConfig = modelConfigService.getEnabledFallback();
+                    lastLoadTime = System.currentTimeMillis();
+                }
+            }
         }
         return fallbackConfig;
     }
