@@ -1,5 +1,3 @@
-import { interviewFeedback, interviewHistory } from '@/mock'
-import type { InterviewFeedback, InterviewSession } from '@/types'
 import { get, post } from './client'
 
 interface ChatResponse {
@@ -30,10 +28,6 @@ function parseContent<T>(content: string | undefined): T | null {
 }
 
 export const interviewApi = {
-  history: () => Promise.resolve<InterviewSession[]>(interviewHistory),
-
-  feedback: () => Promise.resolve<InterviewFeedback>(interviewFeedback),
-
   start: async (
     position: string,
     difficulty = 'normal',

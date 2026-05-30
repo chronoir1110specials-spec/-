@@ -92,6 +92,11 @@ public class KbController
         {
             return R.fail("文件格式不正确，请上传 pdf、docx、txt、md 格式");
         }
+        // 文件头(magic number)校验，防伪造扩展名（设计 15.6）
+        if (!com.ruoyi.agent.core.FileSignatureValidator.matches(file, extension))
+        {
+            return R.fail("文件内容与扩展名不符，疑似伪造文件");
+        }
 
         Long currentUserId = requireCurrentUserId();
         try

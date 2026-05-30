@@ -9,7 +9,6 @@ import {
   Fold,
   House,
   Microphone,
-  Reading,
   Setting,
   Tickets,
   User,
@@ -28,7 +27,6 @@ const pageTitle = computed(() => String(route.meta.title ?? '就业辅导 Agent'
 const displayName = computed(() => userStore.profile.name || userStore.profile.school || localStorage.getItem('career-username') || '当前用户')
 const displayTitle = computed(() => userStore.profile.title || userStore.profile.targetPosition || userStore.profile.jobStage || '求职学生')
 const activeMenu = computed(() => {
-  if (route.path.startsWith('/assessment')) return '/assessment'
   if (route.path.startsWith('/resume')) return '/resume/upload'
   if (route.path.startsWith('/interview')) return '/interview/room'
   if (route.path.startsWith('/jobs')) return '/jobs'
@@ -39,19 +37,18 @@ const activeMenu = computed(() => {
 
 const navItems = computed(() => {
   const items = [
-    { index: '/home', label: '首页', icon: House },
-    { index: '/assessment', label: '职业测评', icon: DataAnalysis },
+    { index: '/home', label: '工作台', icon: House },
     { index: '/resume/upload', label: '简历管理', icon: Document },
     { index: '/chat', label: '智能对话', icon: ChatDotRound },
     { index: '/interview/room', label: '面试训练', icon: Microphone },
     { index: '/jobs', label: '岗位匹配', icon: Briefcase },
-    { index: '/learning', label: '学习路径', icon: Reading },
     { index: '/profile', label: '个人中心', icon: User }
   ]
   if (userStore.hasRole('admin')) {
     items.push(
       { index: '/knowledge', label: '知识库管理', icon: Collection },
       { index: '/admin/model', label: '模型配置', icon: Setting },
+      { index: '/admin/agents', label: 'Agent 能力', icon: DataAnalysis },
       { index: '/admin/logs', label: '运行日志', icon: Tickets }
     )
   }
