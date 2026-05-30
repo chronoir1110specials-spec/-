@@ -246,6 +246,7 @@ export interface ModelCallLog {
   totalTokens?: number
   costTime?: number
   success?: number
+  isFallback?: number
   errorMessage?: string
   createTime?: string
 }

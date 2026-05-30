@@ -60,6 +60,27 @@ public class AgentController
     @Autowired
     private com.ruoyi.agent.runtime.AgentDefinitionRegistry agentDefinitionRegistry;
 
+    @Autowired
+    private com.ruoyi.agent.core.IntentRouter intentRouter;
+
+    /**
+     * 意图识别路由（设计 8.4）：对用户输入分类到具体 Agent 类型，返回意图与置信度，
+     * 供前端统一入口自动调度。
+     */
+    @PostMapping("/route")
+    public R<java.util.Map<String, Object>> route(@RequestBody AskRequest request)
+    {
+        String text = request == null ? null : request.getMessage();
+        com.ruoyi.agent.core.IntentRouter.IntentResult result = intentRouter.detect(text);
+        com.ruoyi.agent.runtime.AgentDefinition def = agentDefinitionRegistry.get(result.getAgentType());
+        java.util.Map<String, Object> data = new java.util.HashMap<String, Object>();
+        data.put("agentType", result.getAgentType());
+        data.put("displayName", def == null ? result.getAgentType() : def.getDisplayName());
+        data.put("confidence", result.getConfidence());
+        data.put("reason", result.getReason());
+        return R.ok(data);
+    }
+
     /**
      * 列出已注册工具与 Agent 定义（用于后台展示 Agent 能力）
      */

@@ -8,6 +8,28 @@ export interface AdminStats {
   totalDocuments?: number
 }
 
+export interface AgentToolInfo {
+  name: string
+  description: string
+  readOnly: boolean
+  destructive: boolean
+}
+
+export interface AgentDefInfo {
+  agentType: string
+  displayName: string
+  allowedTools: string[]
+  ragPolicy: string
+  memoryPolicy: string
+  modelPolicy: string
+  maxToolCalls: number
+}
+
+export interface AgentCapabilities {
+  tools: AgentToolInfo[]
+  agents: AgentDefInfo[]
+}
+
 export const adminApi = {
   stats: (): Promise<AdminStats> => get<AdminStats>('/admin/stats'),
   models: (): Promise<ModelConfig[]> => get<ModelConfig[]>('/admin/model/list'),
@@ -18,5 +40,6 @@ export const adminApi = {
   testPrimaryModel: (): Promise<ModelTestResult> => get<ModelTestResult>('/admin/model/test/primary'),
   testFallbackModel: (): Promise<ModelTestResult> => get<ModelTestResult>('/admin/model/test/fallback'),
   getRateLimit: (): Promise<{ dailyLimit: number }> => get<{ dailyLimit: number }>('/admin/config/rate-limit'),
-  setRateLimit: (dailyLimit: number): Promise<boolean> => post<boolean>('/admin/config/rate-limit', { dailyLimit })
+  setRateLimit: (dailyLimit: number): Promise<boolean> => post<boolean>('/admin/config/rate-limit', { dailyLimit }),
+  capabilities: (): Promise<AgentCapabilities> => get<AgentCapabilities>('/agent/tools')
 }
