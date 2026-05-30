@@ -83,13 +83,13 @@ onMounted(loadSessions)
 </script>
 
 <template>
-  <div class="grid gap-4 lg:grid-cols-[280px_1fr]">
-    <section class="panel">
+  <div class="chat-grid">
+    <section class="panel session-panel">
       <div class="panel-title">
         <span>历史会话</span>
         <el-button size="small" type="primary" @click="createSession">新建</el-button>
       </div>
-      <el-menu :default-active="String(currentSessionId || '')" @select="(key: string) => selectSession(Number(key))">
+      <el-menu class="session-menu" :default-active="String(currentSessionId || '')" @select="(key: string) => selectSession(Number(key))">
         <el-menu-item v-for="session in sessions" :key="session.id" :index="String(session.id)">
           {{ session.title || `会话 ${session.id}` }}
         </el-menu-item>
@@ -108,7 +108,7 @@ onMounted(loadSessions)
         </div>
       </div>
       <div class="sender">
-        <el-input v-model="input" type="textarea" :rows="3" placeholder="输入你的求职、简历或面试问题" @keydown.enter.exact.prevent="send" />
+        <el-input v-model="input" type="textarea" :rows="3" resize="none" placeholder="输入你的求职、简历或面试问题" @keydown.enter.exact.prevent="send" />
         <el-button type="primary" :loading="loading" @click="send">发送</el-button>
       </div>
     </section>
@@ -116,12 +116,34 @@ onMounted(loadSessions)
 </template>
 
 <style scoped>
-.chat-panel { min-height: calc(100vh - 160px); display: flex; flex-direction: column; }
-.messages { flex: 1; overflow: auto; padding-right: 8px; }
+.chat-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+  height: calc(100vh - 112px);
+}
+.session-panel { display: flex; flex-direction: column; overflow: hidden; }
+.session-menu { flex: 1; min-height: 0; overflow: auto; border-right: 0; }
+.chat-panel { display: flex; flex-direction: column; overflow: hidden; }
+.messages { flex: 1; min-height: 0; overflow-y: auto; padding-right: 8px; }
 .message { display: flex; margin-bottom: 16px; }
 .message.user { justify-content: flex-end; }
-.bubble { max-width: 72%; border-radius: 14px; padding: 12px 14px; background: #f2f4f8; color: #1f2329; white-space: pre-wrap; border: 1px solid #e9ecf2; }
+.bubble {
+  max-width: 72%;
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: #f2f4f8;
+  color: #1f2329;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  border: 1px solid #e9ecf2;
+}
 .message.user .bubble { background: #14b8a6; color: #fff; border-color: #14b8a6; }
 .role { font-size: 12px; opacity: .65; margin-bottom: 6px; }
-.sender { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end; margin-top: 16px; }
+.sender { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end; margin-top: 14px; flex-shrink: 0; }
+@media (max-width: 1024px) {
+  .chat-grid { grid-template-columns: 1fr; height: auto; }
+  .chat-panel { height: calc(100vh - 220px); }
+}
 </style>
