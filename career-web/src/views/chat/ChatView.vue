@@ -102,8 +102,8 @@ onMounted(loadSessions)
         <div v-for="message in messages" :key="message.id" class="message" :class="message.role">
           <div class="bubble">
             <div class="role">{{ message.role === 'user' ? '我' : 'Career Agent' }}</div>
-            <div v-if="message.role === 'user'" class="content">{{ message.content }}</div>
-            <MarkdownRenderer v-else class="content" :content="message.content" />
+            <div v-if="message.role === 'user'" class="bubble-text">{{ message.content }}</div>
+            <MarkdownRenderer v-else class="bubble-text" :content="message.content" />
           </div>
         </div>
       </div>
@@ -140,6 +140,7 @@ onMounted(loadSessions)
   border: 1px solid #e9ecf2;
 }
 .message.user .bubble { background: #14b8a6; color: #fff; border-color: #14b8a6; }
+.bubble-text { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
 .role { font-size: 12px; opacity: .65; margin-bottom: 6px; }
 .sender { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end; margin-top: 14px; flex-shrink: 0; }
 @media (max-width: 1024px) {
