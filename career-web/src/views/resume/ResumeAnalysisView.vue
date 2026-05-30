@@ -38,7 +38,7 @@ onMounted(() => store.loadAnalysis(id.value))
       <div class="flex flex-wrap items-center gap-8">
         <el-progress type="dashboard" :percentage="store.analysis.score" :width="150" />
         <div>
-          <h2 class="text-2xl font-semibold text-slate-50">{{ store.analysis.summary || '简历分析结果' }}</h2>
+          <h2 class="text-2xl font-semibold text-slate-800">{{ store.analysis.summary || '简历分析结果' }}</h2>
           <p class="muted mt-2">评分和建议来自当前简历解析结果或模型优化输出。</p>
         </div>
       </div>

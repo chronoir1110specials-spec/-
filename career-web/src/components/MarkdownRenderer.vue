@@ -48,7 +48,7 @@ const rendered = computed(() => {
 .markdown-body :deep(h1),
 .markdown-body :deep(h2),
 .markdown-body :deep(h3) { margin: 12px 0 8px; font-weight: 600; }
-.markdown-body :deep(a) { color: #4f7cff; text-decoration: underline; }
+.markdown-body :deep(a) { color: #0d9488; text-decoration: underline; }
 .markdown-body :deep(blockquote) {
   border-left: 3px solid #d4d9e2;
   padding-left: 12px;

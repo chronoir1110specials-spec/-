@@ -14,7 +14,8 @@ const router = createRouter({
       redirect: '/home',
       children: [
         { path: 'home', name: 'home', component: () => import('@/views/home/HomeView.vue'), meta: { title: '工作台', public: true } },
-        { path: 'resume', redirect: '/resume/upload' },
+        { path: 'resume', redirect: '/resume/workbench' },
+        { path: 'resume/workbench', name: 'resume-workbench', component: () => import('@/views/resume/ResumeWorkbenchView.vue'), meta: { title: '简历工作台', requiresAuth: true } },
         { path: 'resume/upload', name: 'resume-upload', component: () => import('@/views/resume/ResumeUploadView.vue'), meta: { title: '简历上传', requiresAuth: true } },
         { path: 'resume/analysis', name: 'resume-analysis', component: () => import('@/views/resume/ResumeAnalysisView.vue'), meta: { title: '简历分析', requiresAuth: true } },
         { path: 'resume/history', name: 'resume-history', component: () => import('@/views/resume/ResumeHistoryView.vue'), meta: { title: '历史简历', requiresAuth: true } },

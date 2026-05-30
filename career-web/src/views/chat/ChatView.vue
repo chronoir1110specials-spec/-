@@ -121,7 +121,7 @@ onMounted(loadSessions)
 .message { display: flex; margin-bottom: 16px; }
 .message.user { justify-content: flex-end; }
 .bubble { max-width: 72%; border-radius: 14px; padding: 12px 14px; background: #f2f4f8; color: #1f2329; white-space: pre-wrap; border: 1px solid #e9ecf2; }
-.message.user .bubble { background: #4f7cff; color: #fff; border-color: #4f7cff; }
+.message.user .bubble { background: #14b8a6; color: #fff; border-color: #14b8a6; }
 .role { font-size: 12px; opacity: .65; margin-bottom: 6px; }
 .sender { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end; margin-top: 16px; }
 </style>

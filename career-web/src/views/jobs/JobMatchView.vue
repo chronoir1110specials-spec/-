@@ -69,9 +69,9 @@ onMounted(loadJobs)
       <el-card v-for="job in sortedJobs" :key="job.id" shadow="never">
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h3 class="text-xl font-semibold text-slate-50">{{ job.title }}</h3>
+            <h3 class="text-xl font-semibold text-slate-800">{{ job.title }}</h3>
             <p class="muted mt-2">{{ job.company }} · {{ job.city }} · {{ job.salary }}</p>
-            <p class="mt-3 line-clamp-3 text-slate-300">{{ job.description }}</p>
+            <p class="mt-3 line-clamp-3 text-slate-500">{{ job.description }}</p>
             <div class="mt-4 flex flex-wrap gap-2">
               <el-tag v-for="tag in job.tags" :key="tag">{{ tag }}</el-tag>
             </div>

@@ -27,7 +27,7 @@ const pageTitle = computed(() => String(route.meta.title ?? '就业辅导 Agent'
 const displayName = computed(() => userStore.profile.name || userStore.profile.school || localStorage.getItem('career-username') || '当前用户')
 const displayTitle = computed(() => userStore.profile.title || userStore.profile.targetPosition || userStore.profile.jobStage || '求职学生')
 const activeMenu = computed(() => {
-  if (route.path.startsWith('/resume')) return '/resume/upload'
+  if (route.path.startsWith('/resume')) return '/resume/workbench'
   if (route.path.startsWith('/interview')) return '/interview/room'
   if (route.path.startsWith('/jobs')) return '/jobs'
   if (route.path.startsWith('/admin/logs')) return '/admin/logs'
@@ -38,7 +38,7 @@ const activeMenu = computed(() => {
 const navItems = computed(() => {
   const items = [
     { index: '/home', label: '工作台', icon: House },
-    { index: '/resume/upload', label: '简历管理', icon: Document },
+    { index: '/resume/workbench', label: '简历工作台', icon: Document },
     { index: '/chat', label: '智能对话', icon: ChatDotRound },
     { index: '/interview/room', label: '面试训练', icon: Microphone },
     { index: '/jobs', label: '岗位匹配', icon: Briefcase },
@@ -72,7 +72,7 @@ async function logout() {
         </div>
       </div>
 
-      <el-menu router :default-active="activeMenu" :collapse="collapsed" background-color="#121827" text-color="#aab4c8" active-text-color="#ffffff" class="nav-menu">
+      <el-menu router :default-active="activeMenu" :collapse="collapsed" class="nav-menu">
         <el-menu-item v-for="item in navItems" :key="item.index" :index="item.index">
           <el-icon><component :is="item.icon" /></el-icon>
           <template #title>{{ item.label }}</template>

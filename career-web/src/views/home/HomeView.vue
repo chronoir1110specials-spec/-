@@ -51,8 +51,8 @@ onMounted(async () => {
         <h1>大学生就业辅导 Agent</h1>
         <p>简历优化、岗位分析、就业知识库问答与智能对话，一站式 AI 求职助手。</p>
         <div class="hero-actions">
-          <el-button type="primary" size="large" round @click="start">开始使用</el-button>
-          <el-button v-if="!loggedIn" size="large" round @click="router.push('/register')">注册账号</el-button>
+          <el-button class="hero-btn-primary" size="large" round @click="start">开始使用</el-button>
+          <el-button v-if="!loggedIn" class="hero-btn-ghost" size="large" round @click="router.push('/register')">注册账号</el-button>
         </div>
       </div>
     </section>
@@ -98,30 +98,45 @@ onMounted(async () => {
 
 <style scoped>
 .hero {
-  background: linear-gradient(120deg, #eef3ff 0%, #f7f9fc 100%);
-  border: 1px solid #e9ecf2;
-  border-radius: 16px;
-  padding: 48px 40px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(120deg, #0f766e 0%, #14b8a6 55%, #2dd4bf 100%);
+  border-radius: 20px;
+  padding: 52px 44px;
+  box-shadow: 0 18px 48px rgba(20, 184, 166, 0.28);
 }
-.hero-text h1 { font-size: 30px; font-weight: 800; color: #1f2329; margin-bottom: 12px; }
-.hero-text p { color: #5b6271; font-size: 16px; max-width: 640px; line-height: 1.7; }
-.hero-actions { margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap; }
+.hero::after {
+  content: '';
+  position: absolute;
+  right: -80px;
+  top: -80px;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.22), transparent 70%);
+}
+.hero-text h1 { font-size: 32px; font-weight: 800; color: #ffffff; margin-bottom: 12px; }
+.hero-text p { color: rgba(255, 255, 255, 0.9); font-size: 16px; max-width: 640px; line-height: 1.7; }
+.hero-actions { margin-top: 26px; display: flex; gap: 12px; flex-wrap: wrap; position: relative; }
+.hero-btn-primary { background: #ffffff; border-color: #ffffff; color: #0d9488; font-weight: 700; }
+.hero-btn-primary:hover { background: #f0fdfa; border-color: #f0fdfa; color: #0f766e; }
+.hero-btn-ghost { background: transparent; border-color: rgba(255,255,255,0.7); color: #ffffff; }
+.hero-btn-ghost:hover { background: rgba(255,255,255,0.14); border-color: #ffffff; color: #ffffff; }
 
-.section-label { font-size: 15px; font-weight: 700; color: #1f2329; margin-bottom: 14px; }
+.section-label { font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 14px; }
 
 .service-card {
   background: #ffffff;
-  border: 1px solid #e9ecf2;
-  border-radius: 12px;
+  border: 1px solid #e6ebee;
+  border-radius: 16px;
   padding: 22px;
   cursor: pointer;
   transition: all .18s ease;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
 }
-.service-card:hover { border-color: #4f7cff; transform: translateY(-2px); box-shadow: 0 6px 18px rgba(79, 124, 255, 0.12); }
+.service-card:hover { border-color: #14b8a6; transform: translateY(-3px); box-shadow: 0 12px 30px rgba(20, 184, 166, 0.16); }
 .service-icon { font-size: 26px; }
-.service-name { font-weight: 700; font-size: 16px; color: #1f2329; margin: 10px 0 6px; }
+.service-name { font-weight: 700; font-size: 16px; color: #0f172a; margin: 10px 0 6px; }
 .service-desc { font-size: 13px; line-height: 1.6; }
 
-.link { color: #4f7cff; cursor: pointer; }
+.link { color: #0d9488; cursor: pointer; font-weight: 600; }
 </style>
