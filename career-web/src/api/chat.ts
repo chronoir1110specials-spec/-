@@ -1,5 +1,5 @@
 import type { ChatMessage, ChatSession } from '@/types'
-import { get, getToken, post } from './client'
+import { del, get, getToken, post, put } from './client'
 
 interface ChatResponse {
   success: boolean
@@ -26,6 +26,8 @@ export const chatApi = {
   detail: (id: number): Promise<ChatDetail> => get<ChatDetail>(`/chat/session/${id}`),
   messages: (id: number): Promise<ChatMessage[]> => get<ChatMessage[]>(`/chat/session/${id}/messages`),
   send: (sessionId: number, content: string): Promise<ChatResponse> => post<ChatResponse>(`/chat/session/${sessionId}/messages`, { content }),
+  deleteSession: (id: number): Promise<boolean> => del<boolean>(`/chat/session/${id}`),
+  renameSession: (id: number, title: string): Promise<boolean> => put<boolean>(`/chat/session/${id}/title`, { title }),
 
   /**
    * 流式发送（SSE）。用 fetch 读取响应流，按 SSE 协议逐块回调。

@@ -213,7 +213,13 @@ public class InterviewAgentService extends BaseAgentService
         prompt.append("\n【面试设置】\n");
         prompt.append("- 岗位方向：").append(position).append("\n");
         prompt.append("- 难度：").append(difficulty).append("\n");
-        prompt.append("点评回答时请以 JSON 格式输出，字段包括：score、comment、advantages、problems、referenceAnswer。\n");
+        prompt.append("\n【输出要求】\n");
+        prompt.append("点评回答时请严格以 JSON 格式输出，字段包括：score、comment、advantages、problems、referenceAnswer。\n");
+        prompt.append("- 所有内容必须使用中文\n");
+        prompt.append("- 如果回答中包含代码，请在参考答案中使用反引号包裹代码片段，例如：`float: left`\n");
+        prompt.append("- 对于多行代码块，使用三个反引号包裹\n");
+        prompt.append("- 评分范围：0-100分\n");
+        prompt.append("- 请客观、专业地点评，既要指出问题，也要肯定优点\n");
         return prompt.toString();
     }
 
@@ -226,7 +232,18 @@ public class InterviewAgentService extends BaseAgentService
 
     private String buildEvaluationPrompt(String answer)
     {
-        return "这是学生对当前题目的回答，请点评并打分，输出 JSON：\n" + answer;
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("这是学生对当前题目的回答，请点评并打分。\n\n");
+        prompt.append("学生回答：\n").append(answer).append("\n\n");
+        prompt.append("请严格按照以下 JSON 格式输出（不要包含 markdown 代码块标记）：\n");
+        prompt.append("{\n");
+        prompt.append("  \"score\": 评分(0-100的整数),\n");
+        prompt.append("  \"comment\": \"总体评价（中文）\",\n");
+        prompt.append("  \"advantages\": \"优点（中文，如无明显优点可写'回答较为简洁'等中性评价）\",\n");
+        prompt.append("  \"problems\": \"存在的问题（中文）\",\n");
+        prompt.append("  \"referenceAnswer\": \"参考答案（中文，代码用反引号包裹）\"\n");
+        prompt.append("}\n");
+        return prompt.toString();
     }
 
     private void saveMessage(ChatSession session, String role, String content, String modelName)

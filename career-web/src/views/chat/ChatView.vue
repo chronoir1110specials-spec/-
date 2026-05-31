@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { nextTick, onMounted, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Delete, EditPen } from '@element-plus/icons-vue'
 import type { ChatMessage, ChatSession } from '@/types'
 import { chatApi } from '@/api/chat'
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
@@ -27,6 +28,45 @@ async function selectSession(id: number) {
   currentSessionId.value = id
   messages.value = await chatApi.messages(id)
   await scrollBottom()
+}
+
+async function removeSession(session: ChatSession) {
+  try {
+    await ElMessageBox.confirm(
+      `确定删除会话「${session.title || `会话 ${session.id}`}」吗？该操作不可恢复。`,
+      '删除历史对话',
+      { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' }
+    )
+  } catch {
+    return
+  }
+  await chatApi.deleteSession(session.id)
+  sessions.value = sessions.value.filter((s) => s.id !== session.id)
+  if (currentSessionId.value === session.id) {
+    currentSessionId.value = undefined
+    messages.value = []
+    if (sessions.value.length) await selectSession(sessions.value[0].id)
+  }
+  ElMessage.success('已删除')
+}
+
+async function renameSession(session: ChatSession) {
+  let title: string
+  try {
+    const r = await ElMessageBox.prompt('请输入新的会话名称', '重命名', {
+      inputValue: session.title || '',
+      confirmButtonText: '保存',
+      cancelButtonText: '取消',
+      inputValidator: (v) => (v && v.trim() ? true : '名称不能为空')
+    })
+    title = r.value.trim()
+  } catch {
+    return
+  }
+  await chatApi.renameSession(session.id, title)
+  const target = sessions.value.find((s) => s.id === session.id)
+  if (target) target.title = title
+  ElMessage.success('已重命名')
 }
 
 async function send() {
@@ -89,11 +129,22 @@ onMounted(loadSessions)
         <span>历史会话</span>
         <el-button size="small" type="primary" @click="createSession">新建</el-button>
       </div>
-      <el-menu class="session-menu" :default-active="String(currentSessionId || '')" @select="(key: string) => selectSession(Number(key))">
-        <el-menu-item v-for="session in sessions" :key="session.id" :index="String(session.id)">
-          {{ session.title || `会话 ${session.id}` }}
-        </el-menu-item>
-      </el-menu>
+      <el-empty v-if="sessions.length === 0" description="暂无会话" :image-size="70" />
+      <ul v-else class="session-list">
+        <li
+          v-for="session in sessions"
+          :key="session.id"
+          class="session-item"
+          :class="{ active: session.id === currentSessionId }"
+          @click="selectSession(session.id)"
+        >
+          <span class="session-title">{{ session.title || `会话 ${session.id}` }}</span>
+          <span class="session-actions">
+            <el-icon class="act" title="重命名" @click.stop="renameSession(session)"><EditPen /></el-icon>
+            <el-icon class="act danger" title="删除" @click.stop="removeSession(session)"><Delete /></el-icon>
+          </span>
+        </li>
+      </ul>
     </section>
 
     <section class="panel chat-panel">
@@ -123,7 +174,20 @@ onMounted(loadSessions)
   height: calc(100vh - 112px);
 }
 .session-panel { display: flex; flex-direction: column; overflow: hidden; }
-.session-menu { flex: 1; min-height: 0; overflow: auto; border-right: 0; }
+.session-list { flex: 1; min-height: 0; overflow-y: auto; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.session-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 10px 12px; border-radius: 10px; cursor: pointer;
+  border: 1px solid transparent; transition: all .15s ease;
+}
+.session-item:hover { background: #f0fdfa; border-color: #99f6e4; }
+.session-item.active { background: #ecfdf9; border-color: #14b8a6; }
+.session-title { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.session-actions { display: none; align-items: center; gap: 8px; flex-shrink: 0; }
+.session-item:hover .session-actions { display: flex; }
+.session-actions .act { cursor: pointer; color: #64748b; font-size: 15px; }
+.session-actions .act:hover { color: #0d9488; }
+.session-actions .act.danger:hover { color: #ef4444; }
 .chat-panel { display: flex; flex-direction: column; overflow: hidden; }
 .messages { flex: 1; min-height: 0; overflow-y: auto; padding-right: 8px; }
 .message { display: flex; margin-bottom: 16px; }
